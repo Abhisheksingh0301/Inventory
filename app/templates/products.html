@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Products</h1>
+
+<!-- Add product form -->
+<form method="post" class="mb-6 max-w-md">
+  <div class="mb-4">
+    <label for="name" class="block text-gray-700 font-semibold mb-1">Product Name:</label>
+    <input type="text" name="name" id="name" class="w-full border rounded px-3 py-2" required />
+  </div>
+  <div class="mb-4">
+    <label for="gst_rate" class="block text-gray-700 font-semibold mb-1">GST Rate (%):</label>
+    <input type="number" step="0.01" name="gst_rate" id="gst_rate" class="w-full border rounded px-3 py-2" required />
+  </div>
+  <button type="submit" class="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">Add Product</button>
+</form>
+
+<!-- Show flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-6">
+      {% for category, message in messages %}
+        <div class="p-3 rounded mb-2
+          {% if category == 'success' %}bg-green-200 text-green-800
+          {% elif category == 'error' %}bg-red-200 text-red-800
+          {% endif %}
+        ">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- List of products -->
+<table class="w-full border-collapse border border-gray-300">
+  <thead>
+    <tr class="bg-green-100">
+      <th class="border border-gray-300 px-4 py-2 text-left">ID</th>
+      <th class="border border-gray-300 px-4 py-2 text-left">Name</th>
+      <th class="border border-gray-300 px-4 py-2 text-left">GST Rate (%)</th>
+      <th class="border border-gray-300 px-4 py-2 text-left">Stock Quantity</th>
+      <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>  <!-- New column -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for product in products %}
+    <tr class="hover:bg-green-50">
+      <td class="border border-gray-300 px-4 py-2">{{ product.id }}</td>
+      <td class="border border-gray-300 px-4 py-2">{{ product.name }}</td>
+      <td class="border border-gray-300 px-4 py-2">{{ product.gst_rate }}</td>
+      <td class="border border-gray-300 px-4 py-2">{{ product.stock_quantity }}</td>
+      <td class="border border-gray-300 px-4 py-2">
+        <form action="{{ url_for('main.delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+          <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="5" class="border border-gray-300 px-4 py-2 text-center">No products available.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
