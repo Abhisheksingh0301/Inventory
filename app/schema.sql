@@ -12,7 +12,7 @@ CREATE TABLE products (
     gst_rate REAL NOT NULL,
     stock_quantity INTEGER NOT NULL DEFAULT 0,
     entry_date DATE DEFAULT (DATE('now')),
-    UNIQUE (name, description)  -- ✅ Composite unique constraint
+    UNIQUE (name, brand, item_size)  -- ✅ Composite unique constraint
 );
 
 CREATE TABLE purchases (

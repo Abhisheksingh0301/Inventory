@@ -17,6 +17,9 @@ def products():
     db = get_db()
     if request.method == 'POST':
         name = request.form.get('name')
+        brand = request.form.get('brand')
+        size = request.form.get('size')
+        desc=request.form.get('desc')
         gst_rate = request.form.get('gst_rate')
 
         if not name or not gst_rate:
@@ -24,8 +27,8 @@ def products():
         else:
             try:
                 gst_rate = float(gst_rate)
-                db.execute('INSERT INTO products (name, gst_rate, stock_quantity) VALUES (?, ?, ?)',
-                           (name, gst_rate, 0))
+                db.execute('INSERT INTO products (name, brand, item_size, description, gst_rate, stock_quantity) VALUES (?, ?, ?, ?, ?, ?)',
+                           (name, brand, size, desc, gst_rate, 0))
                 db.commit()
                 flash('Product added successfully!', 'success')
                 return redirect(url_for('main.products'))
