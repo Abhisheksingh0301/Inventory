@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Supplier Management</h2>
+
+  <!-- Supplier Form -->
+  <form method="POST" action="{{ url_for('main.suppliers') }}" class="mb-6 sm:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- GSTIN -->
+      <div>
+        <label for="gstin" class="block text-sm font-medium text-gray-700">GSTIN</label>
+        <input type="text" name="gstin" id="gstin" class="w-full border rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base" required>
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Supplier Name</label>
+        <input type="text" name="name" id="name" class="w-full border rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base" required>
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+        <textarea name="address" id="address" class="w-full border rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base" rows="3"></textarea>
+      </div>
+
+      <!-- State Code -->
+      <div>
+        <label for="state_code" class="block text-sm font-medium text-gray-700">State Code</label>
+        <input type="text" name="state_code" id="state_code" class="w-full border rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base" placeholder="e.g., MH" required>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-4">
+      <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-700 text-sm sm:text-base">Add Supplier</button>
+    </div>
+  </form>
+
+  <!-- Suppliers Table -->
+  <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Supplier List</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead class="bg-green-100">
+        <tr>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">ID</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">GSTIN</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Name</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Address</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">State Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for supplier in suppliers %}
+        <tr class="hover:bg-green-50">
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ supplier.id }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ supplier.gstin }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ supplier.name }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ supplier.address or 'N/A' }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ supplier.state_code }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="border px-2 sm:px-4 py-2 text-center text-xs sm:text-sm">No suppliers yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

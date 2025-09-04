@@ -1,62 +1,182 @@
 {% extends "layout.html" %}
 
-{% block title %}Products{% endblock %}
+{% block title %}Purchase Management{% endblock %}
 
 {% block content %}
-<h2 class="text-2xl font-semibold mt-8 mb-4">Purchase History</h2>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Add New Purchase</h2>
 
-<form method="POST" action="{{ url_for('main.purchase') }}">  <!-- Optional -->
-  <table class="w-full border-collapse border border-gray-300">
-    <thead class="bg-green-100">
-      <tr>
-        <th class="border px-4 py-2 text-left w-12">
-          <input type="checkbox" onclick="toggleCheckboxes(this)" />
-        </th>
-        <th class="border px-4 py-2 text-left">ID</th>
-        <th class="border px-4 py-2 text-left">Product</th>
-        <th class="border px-4 py-2 text-left">Brand</th>
-        <th class="border px-4 py-2 text-left">Size</th>
-        <th class="border px-4 py-2 text-left">Quantity</th>
-        <th class="border px-4 py-2 text-left">Price</th>
-        <th class="border px-4 py-2 text-left">Date</th>
-        <th class="border px-4 py-2 text-left w-32">QTY</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for purchase in purchases %}
-      <tr class="hover:bg-green-50">
-        <!-- Checkbox -->
-        <td class="border px-4 py-2 text-center">
-          <input type="checkbox" name="selected[]" value="{{ purchase.id }}">
-        </td>
+  <!-- Purchase Form -->
+  <form method="POST" action="{{ url_for('main.purchase') }}" class="mb-6 sm:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Product Selection -->
+      <div>
+        <label for="product_id" class="block text-sm font-medium text-gray-700">Product</label>
+        <select name="product_id" id="product_id"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+          <option value="">Select Product</option>
+          {% for product in products %}
+          <option value="{{ product.id }}">{{ product.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-        <!-- Existing fields -->
-        <td class="border px-4 py-2">{{ purchase.id }}</td>
-        <td class="border px-4 py-2">{{ purchase.product_name }}</td>
-        <td class="border px-4 py-2">{{ purchase.quantity }}</td>
-        <td class="border px-4 py-2">₹{{ "%.2f"|format(purchase.purchase_price) }}</td>
-        <td class="border px-4 py-2">{{ purchase.purchase_date }}</td>
+      <!-- Supplier Selection -->
+      <div>
+        <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
+        <select name="supplier_id" id="supplier_id"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+          <option value="">Select Supplier</option>
+          {% for supplier in suppliers %}
+          <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-        <!-- Quantity Input -->
-        <td class="border px-4 py-2">
-          <input type="number" name="new_quantity_{{ purchase.id }}" min="1"
-            class="w-full border rounded px-2 py-1 bg-yellow-100 focus:bg-white transition-colors duration-200"
-            placeholder="Qty" />
-        </td>
-      </tr>
-      {% else %}
-      <tr>
-        <td colspan="9" class="border px-4 py-2 text-center">No purchases yet.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      <!-- Quantity -->
+      <div>
+        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+        <input type="number" name="quantity" id="quantity" min="1"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+      </div>
 
-  <!-- Optional Submit Button for Quantity Update -->
-  <div class="mt-4">
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      Update Quantities
-    </button>
+      <!-- Purchase Price -->
+      <div>
+        <label for="purchase_price" class="block text-sm font-medium text-gray-700">Price per Unit (₹)</label>
+        <input type="number" name="purchase_price" id="purchase_price" step="0.01" min="0"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+      </div>
+
+      <!-- Tax Rates -->
+      <div>
+        <label for="cgst_rate" class="block text-sm font-medium text-gray-700">CGST Rate (%)</label>
+        <input type="number" name="cgst_rate" id="cgst_rate" step="0.01" min="0" value="0"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label for="sgst_rate" class="block text-sm font-medium text-gray-700">SGST Rate (%)</label>
+        <input type="number" name="sgst_rate" id="sgst_rate" step="0.01" min="0" value="0"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label for="igst_rate" class="block text-sm font-medium text-gray-700">IGST Rate (%)</label>
+        <input type="number" name="igst_rate" id="igst_rate" step="0.01" min="0" value="0"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <!-- Invoice Details -->
+      <div>
+        <label for="invoice_number" class="block text-sm font-medium text-gray-700">Invoice Number</label>
+        <input type="text" name="invoice_number" id="invoice_number"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+      </div>
+      <div>
+        <label for="invoice_date" class="block text-sm font-medium text-gray-700">Invoice Date</label>
+        <input type="date" value="{{ today }}" name="invoice_date" id="invoice_date"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+      </div>
+      <div>
+        <label for="purchase_date" class="block text-sm font-medium text-gray-700">Purchase Date</label>
+        <input type="date" value="{{ today }}" name="purchase_date" id="purchase_date"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          required>
+      </div>
+
+      <!-- Place of Supply -->
+      <div>
+        <label for="place_of_supply" class="block text-sm font-medium text-gray-700">Place of Supply</label>
+        <input type="text" name="place_of_supply" id="place_of_supply"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+          placeholder="e.g., MH" required>
+      </div>
+
+      <!-- Reverse Charge -->
+      <div class="flex items-center">
+        <input type="checkbox" name="is_reverse_charge" id="is_reverse_charge" value="1" class="mr-2">
+        <label for="is_reverse_charge" class="text-sm font-medium text-gray-700">Reverse Charge</label>
+      </div>
+
+      <!-- Tax Status -->
+      <div>
+        <label for="tax_status" class="block text-sm font-medium text-gray-700">Tax Status</label>
+        <select name="tax_status" id="tax_status"
+          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+          <option value="taxable">Taxable</option>
+          <option value="exempt">Exempt</option>
+          <option value="zero-rated">Zero-Rated</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-4">
+      <button type="submit"
+        class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-700 text-sm sm:text-base">Add
+        Purchase</button>
+    </div>
+  </form>
+
+  <!-- Purchase History Table -->
+  <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Purchase Records</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead class="bg-green-100">
+        <tr>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">ID</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Product</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Supplier</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Quantity</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Price (₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Taxable Value (₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">CGST (%/₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">SGST (%/₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">IGST (%/₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice Date</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Purchase Date</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Place of Supply</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Reverse Charge</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Tax Status</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Entry Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for purchase in purchases %}
+        <tr class="hover:bg-green-50">
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.id }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_name }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.supplier_name }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.quantity }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.purchase_price) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.taxable_value) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.cgst_rate }}% / ₹{{
+            "%.2f"|format(purchase.cgst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.sgst_rate }}% / ₹{{
+            "%.2f"|format(purchase.sgst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.igst_rate }}% / ₹{{
+            "%.2f"|format(purchase.igst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_number }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_date }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.purchase_date }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.place_of_supply }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ 'Yes' if purchase.is_reverse_charge else 'No' }}
+          </td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.tax_status | capitalize }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.entry_date }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="16" class="border px-2 sm:px-4 py-2 text-center text-xs sm:text-sm">No purchases yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-</form>
+</div>
 {% endblock %}
