@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS purchases;
 DROP TABLE IF EXISTS sales;
+DROP TABLE IF EXISTS suppliers;
 
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -8,7 +9,7 @@ CREATE TABLE products (
     brand TEXT NOT NULL,
     item_size TEXT,
     description TEXT,
-    hsn_code TEXT,
+    hsn_code TEXT DEFAULT "None",
     gst_rate REAL NOT NULL,
     stock_quantity INTEGER NOT NULL DEFAULT 0,
     entry_date DATE DEFAULT (DATE('now')),
@@ -43,11 +44,36 @@ CREATE TABLE purchases (
 CREATE TABLE sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER NOT NULL,
+    customer_name TEXT NOT NULL, -- References customers table
     quantity INTEGER NOT NULL,
     sale_price REAL NOT NULL,
-    sale_date TEXT NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    taxable_value REAL NOT NULL, -- Total taxable value (quantity * sale_price - discount)
+    cgst_rate REAL DEFAULT 0, -- CGST rate (e.g., 9% as 9.0)
+    cgst_amount REAL DEFAULT 0, -- CGST amount
+    sgst_rate REAL DEFAULT 0, -- SGST rate (e.g., 9% as 9.0)
+    sgst_amount REAL DEFAULT 0, -- SGST amount
+    igst_rate REAL DEFAULT 0, -- IGST rate (e.g., 18% as 18.0)
+    igst_amount REAL DEFAULT 0, -- IGST amount
+    discount_amount REAL DEFAULT 0, -- Discount applied
+    invoice_number TEXT NOT NULL, -- Invoice number for the sale
+    invoice_date TEXT NOT NULL, -- Date of the sales invoice
+    sale_date TEXT NOT NULL, -- Date of sale in 'YYYY-MM-DD' format
+    place_of_supply TEXT NOT NULL, -- State code for place of supply (e.g., 'MH')
+    tax_status TEXT DEFAULT 'taxable', -- Tax status: 'taxable', 'exempt', 'zero-rated'
+    sale_type TEXT DEFAULT 'cash', -- Type of sale: 'cash', 'credit', 'online'
+    status TEXT DEFAULT 'completed', -- Status: 'completed', 'returned', 'cancelled'
+    entry_date DATE DEFAULT (DATE('now')), -- Date the record was entered
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    CHECK (quantity > 0),
+    CHECK (sale_price > 0),
+    CHECK (taxable_value >= 0),
+    CHECK (discount_amount >= 0)
 );
+
+-- Suggested indexes for performance
+CREATE INDEX idx_sales_product_id ON sales(product_id);
+CREATE INDEX idx_sales_sale_date ON sales(sale_date);
+CREATE INDEX idx_sales_invoice_number ON sales(invoice_number);
 
 CREATE TABLE suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

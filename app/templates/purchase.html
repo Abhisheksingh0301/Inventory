@@ -17,7 +17,7 @@
           required>
           <option value="">Select Product</option>
           {% for product in products %}
-          <option value="{{ product.id }}">{{ product.name }}</option>
+          <option value="{{ product.id }}">{{ product.name }}-{{ product.brand }}-{{ product.item_size }}</option>
           {% endfor %}
         </select>
       </div>
