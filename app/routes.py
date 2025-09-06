@@ -188,7 +188,7 @@ def get_brands_sizes():
 @main.route('/', methods=['GET', 'POST'])
 def sales():
     db = get_db()
-
+    today = datetime.now().strftime('%Y-%m-%d')
     if request.method == 'POST':
         try:
             product_id = request.form['product_id']
@@ -271,7 +271,7 @@ def sales():
     print("DEBUG unique_names:", unique_names)
     print("DEBUG type of unique_names:", type(unique_names))
 
-    return render_template('home.html', products=products, product_names=unique_names)
+    return render_template('home.html', products=products, product_names=unique_names, today=today)
 
 # @main.route('/test')
 # def test_page():
