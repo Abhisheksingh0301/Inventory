@@ -189,13 +189,11 @@ def get_brands_sizes():
 def sales():
     db = get_db()
     today = datetime.now().strftime('%Y-%m-%d')
+
     if request.method == 'POST':
         try:
-            product_id = request.form['product_id']
-            customer_name = request.form['customer_name']  # Match form field name
-            quantity = int(request.form['quantity'])
-            sale_price = float(request.form['sale_price'])
-            discount_amount = float(request.form.get('discount_amount', 0))
+            # Extract common fields (not item-specific)
+            customer_name = request.form['customer_name']
             invoice_number = request.form['invoice_number']
             invoice_date = request.form['invoice_date']
             sale_date = request.form['sale_date']
@@ -203,40 +201,73 @@ def sales():
             tax_status = request.form.get('tax_status', 'taxable')
             sale_type = request.form.get('sale_type', 'cash')
 
-            taxable_value = quantity * sale_price - discount_amount
-            if taxable_value < 0:
-                taxable_value = 0
+            # Process each item in the items array
+            items = []
+            i = 0
+            while f'items[{i}][product_id]' in request.form:
+                item = {
+                    'product_id': request.form[f'items[{i}][product_id]'],
+                    'quantity': int(request.form[f'items[{i}][quantity]']),
+                    'sale_price': float(request.form[f'items[{i}][sale_price]']),
+                    'discount_amount': float(request.form.get(f'items[{i}][discount_amount]', 0))
+                }
+                items.append(item)
+                i += 1
 
-            product = db.execute('SELECT gst_rate FROM products WHERE id = ?', (product_id,)).fetchone()
-            if not product:
-                flash("Product not found.", "danger")
+            if not items:
+                flash("No items provided for the sale.", "danger")
                 return redirect(url_for('main.sales'))
 
-            gst_rate = product['gst_rate']
-            cgst_rate = sgst_rate = gst_rate / 2
-            cgst_amount = sgst_amount = taxable_value * (cgst_rate / 100)
-            igst_rate = igst_amount = 0
+            # Process each item
+            for item in items:
+                product_id = item['product_id']
+                quantity = item['quantity']
+                sale_price = item['sale_price']
+                discount_amount = item['discount_amount']
 
-            db.execute('''
-                INSERT INTO sales (
+                # Calculate taxable value
+                taxable_value = quantity * sale_price - discount_amount
+                if taxable_value < 0:
+                    taxable_value = 0
+
+                # Fetch product details
+                product = db.execute('SELECT gst_rate FROM products WHERE id = ?', (product_id,)).fetchone()
+                if not product:
+                    flash(f"Product ID {product_id} not found.", "danger")
+                    return redirect(url_for('main.sales'))
+
+                # Calculate taxes
+                gst_rate = product['gst_rate']
+                cgst_rate = sgst_rate = gst_rate / 2
+                cgst_amount = sgst_amount = taxable_value * (cgst_rate / 100)
+                igst_rate = igst_amount = 0  # Adjust based on your tax logic if needed
+
+                # Insert sale record
+                db.execute('''
+                    INSERT INTO sales (
+                        product_id, customer_name, quantity, sale_price, taxable_value,
+                        cgst_rate, cgst_amount, sgst_rate, sgst_amount,
+                        igst_rate, igst_amount, discount_amount,
+                        invoice_number, invoice_date, sale_date,
+                        place_of_supply, tax_status, sale_type
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
                     product_id, customer_name, quantity, sale_price, taxable_value,
                     cgst_rate, cgst_amount, sgst_rate, sgst_amount,
                     igst_rate, igst_amount, discount_amount,
                     invoice_number, invoice_date, sale_date,
                     place_of_supply, tax_status, sale_type
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                product_id, customer_name, quantity, sale_price, taxable_value,
-                cgst_rate, cgst_amount, sgst_rate, sgst_amount,
-                igst_rate, igst_amount, discount_amount,
-                invoice_number, invoice_date, sale_date,
-                place_of_supply, tax_status, sale_type
-            ))
+                ))
 
-            db.execute('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', (quantity, product_id))
+                # Update stock
+                db.execute('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', (quantity, product_id))
+
+            # Commit transaction
             db.commit()
             flash("Sale recorded successfully!", "success")
-            return redirect(url_for('main.sales'))
+            # return redirect(url_for('main.sales'))
+            return redirect(url_for('main.invoice_view', invoice_number=invoice_number))
+
         except Exception as e:
             db.rollback()
             flash(f"Error recording sale: {str(e)}", "danger")
@@ -257,21 +288,54 @@ def sales():
                     d[key] = "Unknown"
 
     sanitize(products)
-    # unique_names = sorted({product['name'] for product in products if product['name'] and product['name'] != "Unknown"})
     unique_names = sorted({product['name'] for product in products if product['name']})
 
-
     # Debug: Print to console
-    print("Products Raw:", products_raw)
-    print("Products Dict:", products)
-    print("Unique Names:", unique_names)
+    # print("Products Raw:", products_raw)
+    # print("Products Dict:", products)
+    # print("Unique Names:", unique_names)
 
     if not unique_names:
         flash("No valid product names found in the database. Please add products.", "warning")
-    print("DEBUG unique_names:", unique_names)
-    print("DEBUG type of unique_names:", type(unique_names))
 
     return render_template('home.html', products=products, product_names=unique_names, today=today)
+
+#Invoice routes
+@main.route('/invoice/<invoice_number>')
+def invoice_view(invoice_number):
+    db = get_db()
+    
+    # Fetch all sales with the given invoice number
+    sales = db.execute(
+        '''SELECT s.*, p.name, p.brand, p.item_size
+           FROM sales s
+           JOIN products p ON s.product_id = p.id
+           WHERE s.invoice_number = ?''', (invoice_number,)
+    ).fetchall()
+    
+    if not sales:
+        flash("Invoice not found.", "danger")
+        return redirect(url_for('main.sales'))
+    
+    # Extract shared invoice fields from first item
+    info = dict(sales[0])
+    items = [dict(row) for row in sales]
+
+    # Compute totals
+    total_qty = sum(item['quantity'] for item in items)
+    total_discount = sum(item['discount_amount'] for item in items)
+    total_taxable = sum(item['taxable_value'] for item in items)
+    total_cgst = sum(item['cgst_amount'] for item in items)
+    total_sgst = sum(item['sgst_amount'] for item in items)
+    grand_total = total_taxable + total_cgst + total_sgst
+
+    return render_template("invoice.html", info=info, items=items,
+                           total_qty=total_qty,
+                           total_discount=total_discount,
+                           total_taxable=total_taxable,
+                           total_cgst=total_cgst,
+                           total_sgst=total_sgst,
+                           grand_total=grand_total)
 
 # @main.route('/test')
 # def test_page():

@@ -34,7 +34,7 @@ CREATE TABLE purchases (
     purchase_date TEXT NOT NULL, -- Date of purchase
     place_of_supply TEXT NOT NULL, -- State code for place of supply (e.g., 'MH' for Maharashtra)
     is_reverse_charge BOOLEAN DEFAULT FALSE, -- Flag for reverse charge mechanism
-    tax_status TEXT DEFAULT 'taxable', -- Tax status: 'taxable', 'exempt', 'zero-rated'
+    tax_status TEXT DEFAULT 'Taxable', -- Tax status: 'taxable', 'exempt', 'zero-rated'
     entry_date DATE DEFAULT (DATE('now')), -- Date the record was entered
     FOREIGN KEY (product_id) REFERENCES products(id), -- Ensures valid product
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) -- Ensures valid supplier
@@ -59,9 +59,9 @@ CREATE TABLE sales (
     invoice_date TEXT NOT NULL, -- Date of the sales invoice
     sale_date TEXT NOT NULL, -- Date of sale in 'YYYY-MM-DD' format
     place_of_supply TEXT NOT NULL, -- State code for place of supply (e.g., 'MH')
-    tax_status TEXT DEFAULT 'taxable', -- Tax status: 'taxable', 'exempt', 'zero-rated'
-    sale_type TEXT DEFAULT 'cash', -- Type of sale: 'cash', 'credit', 'online'
-    status TEXT DEFAULT 'completed', -- Status: 'completed', 'returned', 'cancelled'
+    tax_status TEXT DEFAULT 'Taxable', -- Tax status: 'taxable', 'exempt', 'zero-rated'
+    sale_type TEXT DEFAULT 'Cash', -- Type of sale: 'cash', 'credit', 'online'
+    status TEXT DEFAULT 'Completed', -- Status: 'completed', 'returned', 'cancelled'
     entry_date DATE DEFAULT (DATE('now')), -- Date the record was entered
     FOREIGN KEY (product_id) REFERENCES products(id),
     CHECK (quantity > 0),

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ info.invoice_number }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com/3.3.5"></script>
+
+</head>
+
+<body class="bg-gray-100 py-10">
+    <div class="max-w-5xl mx-auto bg-white p-8 shadow-md" id="invoice">
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Singh Enterprises</h1>
+                <p class="text-sm text-gray-600">Laheriasarai, Darbhanga</p>
+                <p class="text-sm text-gray-600">Email: abhi@gmail.com | Phone: +91-9239000000</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-xl font-semibold text-gray-700">Tax Invoice</h2>
+                <p class="text-sm">Invoice #: <strong>{{ info.invoice_number }}</strong></p>
+               <p class="text-sm">Date: {{ info.invoice_date | format_dmy }}</p>
+            </div>
+        </div>
+
+        <div class="flex justify-between mb-6 text-sm px-10">
+            <div>
+                <p><strong>Customer:</strong> {{ info.customer_name }}</p>
+                <p><strong>Place of Supply:</strong> {{ info.place_of_supply }}</p>
+                <p><strong>Sale Date:</strong> {{ info.sale_date }}</p>
+            </div>
+            <div>
+                <p><strong>Tax Status:</strong> {{ info.tax_status }}</p>
+                <p><strong>Sale Type:</strong> {{ info.sale_type }}</p>
+            </div>
+        </div>
+
+        <table class="w-full text-sm table-auto border-collapse mb-6">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="border p-2 text-left">Item</th>
+                    <th class="border p-2 text-left">Brand</th>
+                    <th class="border p-2 text-left">Size</th>
+                    <th class="border p-2 text-right">Qty</th>
+                    <th class="border p-2 text-right">Price</th>
+                    <th class="border p-2 text-right">Discount</th>
+                    <th class="border p-2 text-right">Taxable</th>
+                    <th class="border p-2 text-right">CGST</th>
+                    <th class="border p-2 text-right">SGST</th>
+                    <th class="border p-2 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="border p-2">{{ item['name'] }}</td>
+                    <td class="border p-2">{{ item['brand'] }}</td>
+                    <td class="border p-2">{{ item['item_size'] }}</td>
+                    <td class="border p-2 text-right">{{ item['quantity'] }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['sale_price']) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['discount_amount']) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['taxable_value']) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['cgst_amount']) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['sgst_amount']) }}</td>
+                    <td class="border p-2 text-right">
+                        {{ "%.2f"|format(item['taxable_value'] + item['cgst_amount'] + item['sgst_amount']) }}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="font-bold bg-gray-100">
+                    <td colspan="3" class="border p-2">Total</td>
+                    <td class="border p-2 text-right">{{ total_qty }}</td>
+                    <td></td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(total_discount) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(total_taxable) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(total_cgst) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(total_sgst) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(grand_total) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="text-right text-sm space-y-1">
+            <p><strong>Total Taxable:</strong> ₹{{ "%.2f"|format(total_taxable) }}</p>
+            <p><strong>CGST:</strong> ₹{{ "%.2f"|format(total_cgst) }}</p>
+            <p><strong>SGST:</strong> ₹{{ "%.2f"|format(total_sgst) }}</p>
+            <p class="text-lg"><strong>Grand Total:</strong> ₹{{ "%.2f"|format(grand_total) }}</p>
+        </div>
+
+        <p class="mt-8 text-center text-xs text-gray-500">Thank you for your business!</p>
+
+        <div class="text-center mt-6">
+            <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Download PDF
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const element = document.getElementById("invoice");
+
+            if (!element) {
+                alert("Invoice section not found.");
+                return;
+            }
+
+            html2pdf().set({
+                margin: 0.5,
+                filename: 'invoice_{{ info.invoice_number }}.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            }).from(element).save()
+                .then(() => {
+                    console.log("✅ PDF generated");
+                })
+                .catch(err => {
+                    console.error("❌ Error generating PDF:", err);
+                    alert("Failed to download PDF. Check the console.");
+                });
+        }
+    </script>
+
+</body>
+
+</html>
