@@ -21,7 +21,7 @@
             <div class="text-right">
                 <h2 class="text-xl font-semibold text-gray-700">Tax Invoice</h2>
                 <p class="text-sm">Invoice #: <strong>{{ info.invoice_number }}</strong></p>
-               <p class="text-sm">Date: {{ info.invoice_date | format_dmy }}</p>
+                <p class="text-sm">Date: {{ info.invoice_date | format_dmy }}</p>
             </div>
         </div>
 
@@ -95,6 +95,13 @@
             <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Download PDF
             </button>
+        </div>
+        <div class="text-center mt-6">
+            <a href="{{ url_for('main.generate_invoice_pdf_latex', invoice_number=info.invoice_number) }}"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-block" target="_blank"
+                rel="noopener noreferrer">
+                Download PDF
+            </a>
         </div>
     </div>
 

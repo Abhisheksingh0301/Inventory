@@ -126,49 +126,36 @@
   <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Purchase Records</h2>
   <div class="overflow-x-auto">
     <table class="w-full border-collapse border border-gray-300">
-      <thead class="bg-green-100">
+      <thead class="bg-blue-100">
         <tr>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">ID</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Product</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Brand</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Size</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Supplier</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Quantity</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Price (₹)</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Taxable Value (₹)</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">CGST (%/₹)</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">SGST (%/₹)</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">IGST (%/₹)</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Total</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice Date</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Purchase Date</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Place of Supply</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Reverse Charge</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Tax Status</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Entry Date</th>
         </tr>
       </thead>
       <tbody>
         {% for purchase in purchases %}
         <tr class="hover:bg-green-50">
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.id }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_number }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_name }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_brand }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_size }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.supplier_name }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.quantity }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.purchase_price) }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.taxable_value) }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.cgst_rate }}% / ₹{{
             "%.2f"|format(purchase.cgst_amount) }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.sgst_rate }}% / ₹{{
-            "%.2f"|format(purchase.sgst_amount) }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.igst_rate }}% / ₹{{
-            "%.2f"|format(purchase.igst_amount) }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_number }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_date }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.purchase_date }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.place_of_supply }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ 'Yes' if purchase.is_reverse_charge else 'No' }}
-          </td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.tax_status | capitalize }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.entry_date }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">  ₹{{ "%.2f"|format(purchase.taxable_value + purchase.cgst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_date | format_dmy }}</td>
         </tr>
         {% else %}
         <tr>

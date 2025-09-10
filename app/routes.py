@@ -102,6 +102,8 @@ def purchase():
         SELECT 
             purchases.id, 
             products.name AS product_name, 
+            products.brand AS product_brand, 
+            products.item_size AS product_size, 
             suppliers.name AS supplier_name,
             purchases.quantity, 
             purchases.purchase_price, 
@@ -301,27 +303,101 @@ def sales():
     return render_template('home.html', products=products, product_names=unique_names, today=today)
 
 #Invoice routes
-@main.route('/invoice/<invoice_number>')
-def invoice_view(invoice_number):
+from flask import send_file, flash, redirect, url_for
+from jinja2 import Environment, FileSystemLoader
+import os
+from flask import current_app
+
+
+@main.route('/invoice-pdf/<invoice_number>')
+def generate_invoice_pdf_latex(invoice_number):
     db = get_db()
     
-    # Fetch all sales with the given invoice number
+    # Step 1: Fetch data from the database
     sales = db.execute(
         '''SELECT s.*, p.name, p.brand, p.item_size
            FROM sales s
            JOIN products p ON s.product_id = p.id
            WHERE s.invoice_number = ?''', (invoice_number,)
     ).fetchall()
-    
+
     if not sales:
         flash("Invoice not found.", "danger")
         return redirect(url_for('main.sales'))
-    
-    # Extract shared invoice fields from first item
+
+    # Step 2: Process the data
     info = dict(sales[0])
     items = [dict(row) for row in sales]
 
-    # Compute totals
+    total_qty = sum(item['quantity'] for item in items)
+    total_discount = sum(item['discount_amount'] for item in items)
+    total_taxable = sum(item['taxable_value'] for item in items)
+    total_cgst = sum(item['cgst_amount'] for item in items)
+    total_sgst = sum(item['sgst_amount'] for item in items)
+    grand_total = total_taxable + total_cgst + total_sgst
+
+    # Step 3: Render the LaTeX template
+    env = Environment(loader=FileSystemLoader('app/templates'))
+    template = current_app.jinja_env.get_template('invoice_template.tex')
+    #template = env.get_template('invoice_template.tex')
+
+    rendered_tex = template.render(
+        info=info,
+        items=items,
+        total_qty=total_qty,
+        total_discount=total_discount,
+        total_taxable=total_taxable,
+        total_cgst=total_cgst,
+        total_sgst=total_sgst,
+        grand_total=grand_total
+    )
+
+    # Step 4: Write to .tex file
+    output_dir = "invoices"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    tex_filename = f"invoice_{invoice_number}.tex"
+    pdf_filename = f"invoice_{invoice_number}.pdf"
+    tex_path = os.path.join(output_dir, tex_filename)
+    pdf_path = os.path.join(output_dir, pdf_filename)
+
+    with open(tex_path, 'w', encoding='utf-8') as f:
+        f.write(rendered_tex)
+
+    # Step 5: Compile the .tex file to PDF using pdflatex
+    os.system(f"pdflatex -output-directory={output_dir} {tex_path}")
+
+    # Optional cleanup
+    for ext in ['aux', 'log']:
+        aux_file = os.path.join(output_dir, f"invoice_{invoice_number}.{ext}")
+        if os.path.exists(aux_file):
+            os.remove(aux_file)
+
+    # Step 6: Send the PDF to the browser
+    return send_file(pdf_path, as_attachment=True)
+
+# @main.route('/test')
+# def test_page():
+#     return render_template('home.html', product_names=['One', 'Two', 'Three'], products=[])
+
+@main.route('/invoice/<invoice_number>')
+def invoice_view(invoice_number):
+    db = get_db()
+    
+    sales = db.execute(
+        '''SELECT s.*, p.name, p.brand, p.item_size
+           FROM sales s
+           JOIN products p ON s.product_id = p.id
+           WHERE s.invoice_number = ?''', (invoice_number,)
+    ).fetchall()
+
+    if not sales:
+        flash("Invoice not found.", "danger")
+        return redirect(url_for('main.sales'))
+
+    info = dict(sales[0])
+    items = [dict(row) for row in sales]
+
     total_qty = sum(item['quantity'] for item in items)
     total_discount = sum(item['discount_amount'] for item in items)
     total_taxable = sum(item['taxable_value'] for item in items)
@@ -337,6 +413,4 @@ def invoice_view(invoice_number):
                            total_sgst=total_sgst,
                            grand_total=grand_total)
 
-# @main.route('/test')
-# def test_page():
-#     return render_template('home.html', product_names=['One', 'Two', 'Three'], products=[])
+
