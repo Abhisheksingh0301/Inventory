@@ -62,18 +62,25 @@ def purchase():
         product_id = request.form['product_id']
         supplier_id = request.form['supplier_id']
         quantity = int(request.form['quantity'])
+        place_of_supply = request.form['place_of_supply']
         purchase_price = float(request.form['purchase_price'])
         taxable_value = quantity * purchase_price
-        cgst_rate = float(request.form.get('cgst_rate', 0))
+        cgst_rate = float(request.form.get('gst_rate', 0)) / 2
         cgst_amount = (taxable_value * cgst_rate) / 100
-        sgst_rate = float(request.form.get('sgst_rate', 0))
-        sgst_amount = (taxable_value * sgst_rate) / 100
-        igst_rate = float(request.form.get('igst_rate', 0))
-        igst_amount = (taxable_value * igst_rate) / 100
+        if(place_of_supply=="BR"):
+            sgst_rate = float(request.form.get('gst_rate', 0)) / 2
+            sgst_amount = (taxable_value * sgst_rate) / 100
+            igst_rate = 0
+            igst_amount = 0
+        else :
+            sgst_rate = 0
+            sgst_amount = 0
+            igst_rate = float(request.form.get('gst_rate', 0)) / 2
+            igst_amount = (taxable_value * igst_rate) / 100
+         
         invoice_number = request.form['invoice_number']
         invoice_date = request.form['invoice_date']
         purchase_date = request.form['purchase_date']
-        place_of_supply = request.form['place_of_supply']
         is_reverse_charge = request.form.get('is_reverse_charge', '0') == '1'
         tax_status = request.form['tax_status']
 
@@ -309,73 +316,6 @@ import os
 from flask import current_app
 
 
-@main.route('/invoice-pdf/<invoice_number>')
-def generate_invoice_pdf_latex(invoice_number):
-    db = get_db()
-    
-    # Step 1: Fetch data from the database
-    sales = db.execute(
-        '''SELECT s.*, p.name, p.brand, p.item_size
-           FROM sales s
-           JOIN products p ON s.product_id = p.id
-           WHERE s.invoice_number = ?''', (invoice_number,)
-    ).fetchall()
-
-    if not sales:
-        flash("Invoice not found.", "danger")
-        return redirect(url_for('main.sales'))
-
-    # Step 2: Process the data
-    info = dict(sales[0])
-    items = [dict(row) for row in sales]
-
-    total_qty = sum(item['quantity'] for item in items)
-    total_discount = sum(item['discount_amount'] for item in items)
-    total_taxable = sum(item['taxable_value'] for item in items)
-    total_cgst = sum(item['cgst_amount'] for item in items)
-    total_sgst = sum(item['sgst_amount'] for item in items)
-    grand_total = total_taxable + total_cgst + total_sgst
-
-    # Step 3: Render the LaTeX template
-    env = Environment(loader=FileSystemLoader('app/templates'))
-    template = current_app.jinja_env.get_template('invoice_template.tex')
-    #template = env.get_template('invoice_template.tex')
-
-    rendered_tex = template.render(
-        info=info,
-        items=items,
-        total_qty=total_qty,
-        total_discount=total_discount,
-        total_taxable=total_taxable,
-        total_cgst=total_cgst,
-        total_sgst=total_sgst,
-        grand_total=grand_total
-    )
-
-    # Step 4: Write to .tex file
-    output_dir = "invoices"
-    os.makedirs(output_dir, exist_ok=True)
-    
-    tex_filename = f"invoice_{invoice_number}.tex"
-    pdf_filename = f"invoice_{invoice_number}.pdf"
-    tex_path = os.path.join(output_dir, tex_filename)
-    pdf_path = os.path.join(output_dir, pdf_filename)
-
-    with open(tex_path, 'w', encoding='utf-8') as f:
-        f.write(rendered_tex)
-
-    # Step 5: Compile the .tex file to PDF using pdflatex
-    os.system(f"pdflatex -output-directory={output_dir} {tex_path}")
-
-    # Optional cleanup
-    for ext in ['aux', 'log']:
-        aux_file = os.path.join(output_dir, f"invoice_{invoice_number}.{ext}")
-        if os.path.exists(aux_file):
-            os.remove(aux_file)
-
-    # Step 6: Send the PDF to the browser
-    return send_file(pdf_path, as_attachment=True)
-
 # @main.route('/test')
 # def test_page():
 #     return render_template('home.html', product_names=['One', 'Two', 'Three'], products=[])
@@ -413,4 +353,17 @@ def invoice_view(invoice_number):
                            total_sgst=total_sgst,
                            grand_total=grand_total)
 
-
+@main.route('/salesreport')
+def salesreport():
+    db = get_db()
+    sales_rpt = db.execute(
+        '''SELECT s.*, p.name as product_name, p.brand, p.item_size
+           FROM sales s
+           JOIN products p ON s.product_id = p.id
+           order by s.invoice_date desc, invoice_number
+        '''   
+    ).fetchall()
+    if not sales:
+        flash("Sales not found.", "danger")
+        return redirect(url_for('main.sales'))
+    return render_template("salesreport.html",  sales_rpt=sales_rpt)

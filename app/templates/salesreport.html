@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}Purchase Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">📦 Sales report</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+            <thead class="bg-blue-100">
+                <tr>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Sales date</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Cust name</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Product</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Brand</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Size</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Qty</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Sale price</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Discount</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Taxable amt (₹)</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">GST (₹)</th>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Total Value (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sales_rpt in sales_rpt %}
+                <tr class="hover:bg-blue-50">
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.sale_date | format_dmy }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.customer_name }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.invoice_number }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.product_name }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.brand }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.item_size }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.quantity }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.sale_price }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.discount_amount }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.taxable_value }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.cgst_amount +
+                        sales_rpt.sgst_amount + sales_rpt.igst_amount }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.taxable_value +
+                        sales_rpt.cgst_amount + sales_rpt.sgst_amount + sales_rpt.igst_amount}}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="16" class="border px-2 sm:px-4 py-2 text-center text-xs sm:text-sm">No Sales yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

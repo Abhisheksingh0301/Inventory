@@ -17,7 +17,7 @@
           required>
           <option value="">Select Product</option>
           {% for product in products %}
-          <option value="{{ product.id }}">{{ product.name }}-{{ product.brand }}-{{ product.item_size }}</option>
+          <option value="{{ product.id }}">{{ product.name }}-{{ product.brand }}-{{ product.item_size }}-{{ product.description }}</option>
           {% endfor %}
         </select>
       </div>
@@ -53,20 +53,11 @@
 
       <!-- Tax Rates -->
       <div>
-        <label for="cgst_rate" class="block text-sm font-medium text-gray-700">CGST Rate (%)</label>
-        <input type="number" name="cgst_rate" id="cgst_rate" step="0.01" min="0" value="0"
+        <label for="gst_rate" class="block text-sm font-medium text-gray-700">GST Rate (%)</label>
+        <input type="number" name="gst_rate" id="gst_rate" step="0.01" min="0" value="0"
           class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
       </div>
-      <div>
-        <label for="sgst_rate" class="block text-sm font-medium text-gray-700">SGST Rate (%)</label>
-        <input type="number" name="sgst_rate" id="sgst_rate" step="0.01" min="0" value="0"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <div>
-        <label for="igst_rate" class="block text-sm font-medium text-gray-700">IGST Rate (%)</label>
-        <input type="number" name="igst_rate" id="igst_rate" step="0.01" min="0" value="0"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
-      </div>
+    
 
       <!-- Invoice Details -->
       <div>
@@ -91,16 +82,11 @@
       <!-- Place of Supply -->
       <div>
         <label for="place_of_supply" class="block text-sm font-medium text-gray-700">Place of Supply</label>
-        <input type="text" name="place_of_supply" id="place_of_supply"
+        <input type="text" name="place_of_supply" id="place_of_supply" value="BR"
           class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., MH" required>
       </div>
 
-      <!-- Reverse Charge -->
-      <div class="flex items-center">
-        <input type="checkbox" name="is_reverse_charge" id="is_reverse_charge" value="1" class="mr-2">
-        <label for="is_reverse_charge" class="text-sm font-medium text-gray-700">Reverse Charge</label>
-      </div>
 
       <!-- Tax Status -->
       <div>
@@ -111,6 +97,12 @@
           <option value="exempt">Exempt</option>
           <option value="zero-rated">Zero-Rated</option>
         </select>
+      </div>
+      
+      <!-- Reverse Charge -->
+      <div class="flex items-center">
+        <input type="checkbox" name="is_reverse_charge" id="is_reverse_charge" value="1" class="mr-2">
+        <label for="is_reverse_charge" class="text-sm font-medium text-gray-700">Reverse Charge</label>
       </div>
     </div>
 

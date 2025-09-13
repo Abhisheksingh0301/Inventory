@@ -90,18 +90,17 @@
         </div>
 
         <p class="mt-8 text-center text-xs text-gray-500">Thank you for your business!</p>
-
-        <div class="text-center mt-6">
-            <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Download PDF
-            </button>
-        </div>
-        <div class="text-center mt-6">
-            <a href="{{ url_for('main.generate_invoice_pdf_latex', invoice_number=info.invoice_number) }}"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-block" target="_blank"
-                rel="noopener noreferrer">
-                Download PDF
-            </a>
+        <div class="flex sm:flex-row flex-col justify-center items-center">
+            <div class="text-center mt-6 print:hidden mx-3">
+                <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Download PDF
+                </button>
+            </div>
+            <div class="print:hidden text-center mt-6 mx-3">
+                <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Print Page
+                </button>
+            </div>
         </div>
     </div>
 
