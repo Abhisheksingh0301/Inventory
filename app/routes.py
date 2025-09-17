@@ -367,3 +367,31 @@ def salesreport():
         flash("Sales not found.", "danger")
         return redirect(url_for('main.sales'))
     return render_template("salesreport.html",  sales_rpt=sales_rpt)
+
+# New dashboard
+@main.route('/dashboard')
+def dashboard():
+    db=get_db()
+    product_count=db.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+    supplier_count=db.execute("SELECT COUNT(*) FROM suppliers").fetchone()[0]
+    total_stock_value=db.execute("SELECT SUM(purchase_price*quantity) FROM purchases").fetchone()[0]
+    recent_purchases = db.execute('''
+                                  SELECT pur.*, pr.name as product_name, sup.name as supplier_name
+                                   FROM purchases pur
+                                   join products pr on pr.id = pur.product_id
+                                   join suppliers sup on sup.id=pur.supplier_id
+                                   order by pur.purchase_date desc LIMIT 5
+                                  ''')
+    recent_sales = db.execute('''
+                              SELECT s.*, pr.name as product_name 
+                              FROM sales s
+                              join products pr on pr.id=s.product_id
+                              order by sale_date desc LIMIT 5
+                              ''')
+    return render_template('dashboard.html', 
+        total_products=product_count,
+        total_suppliers=supplier_count,
+        total_stock_value=total_stock_value,
+        recent_purchases=recent_purchases,
+        recent_sales=recent_sales)
+
