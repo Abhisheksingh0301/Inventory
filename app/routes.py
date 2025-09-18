@@ -20,6 +20,11 @@ def about():
 @main.route('/products', methods=['GET', 'POST'])
 def products():
     db = get_db()
+    search = request.args.get('search', '')
+    if search:
+        products=db.execute("SELECT * FROM products WHERE name=? COLLATE NOCASE OR brand=? COLLATE NOCASE", (search,search)).fetchall() 
+    else:
+        products=db.execute("SELECT * FROM products").fetchall()
     if request.method == 'POST':
         name = request.form.get('name')
         brand = request.form.get('brand')
@@ -40,8 +45,8 @@ def products():
             except ValueError:
                 flash('GST rate must be a number', 'error')
 
-    products = db.execute('SELECT * FROM products').fetchall()
-    return render_template('products.html', products=products)
+    #products = db.execute('SELECT * FROM products').fetchall()
+    return render_template('products.html', products=products, search=search)
 
 @main.route('/delete-product/<int:product_id>', methods=['POST'])
 def delete_product(product_id):
@@ -194,7 +199,7 @@ def get_brands_sizes():
     return jsonify(brand_size_map)
 
 # 📄 GET & POST: /sales
-@main.route('/', methods=['GET', 'POST'])
+@main.route('/sales', methods=['GET', 'POST'])
 def sales():
     db = get_db()
     today = datetime.now().strftime('%Y-%m-%d')
@@ -307,7 +312,7 @@ def sales():
     if not unique_names:
         flash("No valid product names found in the database. Please add products.", "warning")
 
-    return render_template('home.html', products=products, product_names=unique_names, today=today)
+    return render_template('sales.html', products=products, product_names=unique_names, today=today)
 
 #Invoice routes
 from flask import send_file, flash, redirect, url_for
@@ -366,10 +371,11 @@ def salesreport():
     if not sales:
         flash("Sales not found.", "danger")
         return redirect(url_for('main.sales'))
-    return render_template("salesreport.html",  sales_rpt=sales_rpt)
+    sales_count=db.execute("SELECT COUNT(*) FROM sales").fetchone()[0]
+    return render_template("salesreport.html",  sales_rpt=sales_rpt, sales_count=sales_count)
 
 # New dashboard
-@main.route('/dashboard')
+@main.route('/')
 def dashboard():
     db=get_db()
     product_count=db.execute("SELECT COUNT(*) FROM products").fetchone()[0]
@@ -388,7 +394,7 @@ def dashboard():
                               join products pr on pr.id=s.product_id
                               order by sale_date desc LIMIT 5
                               ''')
-    return render_template('dashboard.html', 
+    return render_template('home.html', 
         total_products=product_count,
         total_suppliers=supplier_count,
         total_stock_value=total_stock_value,

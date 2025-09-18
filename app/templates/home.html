@@ -1,253 +1,150 @@
 {% extends "layout.html" %}
-{% block title %}Sales Management{% endblock %}
+
+{% block title %}Purchase Management{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-8">
-  <h2 class="text-3xl font-bold text-gray-800 mb-6">📦 Record a Sale</h2>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  <div class="mb-4">
-    {% for category, message in messages %}
-    <div class="p-4 rounded text-white
-                {% if category == 'success' %} bg-green-500
-                {% elif category == 'danger' %} bg-red-500
-                {% elif category == 'warning' %} bg-yellow-500
-                {% else %} bg-gray-500 {% endif %}">
-      {{ message }}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% endwith %}
-
-  <form method="POST" action="{{ url_for('main.sales') }}" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
-    <!-- Customer Info -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-        <input type="text" name="customer_name" required class="w-full border rounded px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
-        <input type="text" name="invoice_number" required class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
-        <input type="date" name="invoice_date" value="{{ today }}" required class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sale Date</label>
-        <input type="date" name="sale_date" value="{{ today }}" required class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Place of Supply</label>
-        <input type="text" name="place_of_supply" value="BR" required class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sale Type</label>
-        <select name="sale_type" class="w-full border rounded px-3 py-2">
-          <option value="Cash">Cash</option>
-          <option value="Credit">Credit</option>
-          <option value="Online">Online</option>
-        </select>
-      </div>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Tax Status</label>
-      <select name="tax_status" class="w-full border rounded px-3 py-2">
-        <option value="Taxable">Taxable</option>
-        <option value="Exempt">Exempt</option>
-        <option value="Zero-rated">Zero Rated</option>
-      </select>
-    </div>
-
-    <!-- Items -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Items</label>
-      <div class="space-y-4" id="items-container">
-        <!-- First Item Block -->
-        <div class="item-block bg-gray-50 border p-4 rounded-md space-y-2">
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Item Name</label>
-              <select name="items[0][item]" class="item-name w-full border rounded px-3 py-2" required>
-                <option value="">Select Item</option>
-                {% for name in product_names %}
-                <option value="{{ name }}">{{ name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Brand</label>
-              <select name="items[0][brand]" class="item-brand w-full border rounded px-3 py-2" required>
-                <option value="">Select Brand</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Size</label>
-              <select name="items[0][product_id]" class="item-size w-full border rounded px-3 py-2" required>
-                <option value="">Select Size</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Quantity</label>
-              <input type="number" name="items[0][quantity]" min="1" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Sale Price</label>
-              <input type="number" step="0.01" name="items[0][sale_price]" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Discount</label>
-              <input type="number" step="0.01" name="items[0][discount_amount]" value="0" class="w-full border rounded px-3 py-2">
-            </div>
-          </div>
-          <div class="text-right">
-            <button type="button" class="remove-row bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600">
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-      <button type="button" id="add-item"
-        class="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
-        Add Item
-      </button>
-    </div>
-
-    <button type="submit"
-      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
-      Submit Sale
-    </button>
-  </form>
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <p class="text-gray-600 mt-2">Overview of your inventory management system</p>
 </div>
 
-<!-- JavaScript for dynamic item blocks -->
-<script>
-(function () {
-  let products = {{ products | default([]) | tojson | safe }};
-  let rowIndex = 1;
-
-  document.getElementById('add-item').addEventListener('click', function () {
-    const container = document.getElementById('items-container');
-    const newBlock = document.createElement('div');
-    newBlock.className = 'item-block bg-gray-50 border p-4 rounded-md space-y-2 mt-4';
-    newBlock.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Item Name</label>
-          <select name="items[${rowIndex}][item]" class="item-name w-full border rounded px-3 py-2" required>
-            <option value="">Select Item</option>
-            {% for name in product_names %}
-            <option value="{{ name }}">{{ name }}</option>
-            {% endfor %}
-          </select>
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center">
+            <div class="p-3 bg-blue-100 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Total Products</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ total_products }}</p>
+            </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Brand</label>
-          <select name="items[${rowIndex}][brand]" class="item-brand w-full border rounded px-3 py-2" required>
-            <option value="">Select Brand</option>
-          </select>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center">
+            <div class="p-3 bg-green-100 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                    </path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Total Suppliers</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ total_suppliers }}</p>
+            </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Size</label>
-          <select name="items[${rowIndex}][product_id]" class="item-size w-full border rounded px-3 py-2" required>
-            <option value="">Select Size</option>
-          </select>
+    </div>
+
+
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex items-center">
+            <div class="p-3 bg-purple-100 rounded-full">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                    </path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Total Stock Value</p>
+                <p class="text-2xl font-semibold text-gray-900"> ₹{{ "%.2f"|format(total_stock_value) }}</p>
+            </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Quantity</label>
-          <input type="number" name="items[${rowIndex}][quantity]" min="1" required class="w-full border rounded px-3 py-2">
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <a href="{{ url_for('main.products') }}"
+        class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center transition duration-200">
+        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add Product
+    </a>
+    <a href="{{ url_for('main.suppliers') }}"
+        class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg text-center transition duration-200">
+        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add Supplier
+    </a>
+    <a href="{{ url_for('main.purchase') }}"
+        class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg text-center transition duration-200">
+        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Purchase
+    </a>
+    <a href="{{ url_for('main.sales') }}"
+        class="bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-lg text-center transition duration-200">
+        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Sale
+    </a>
+</div>
+
+<!-- Recent Transactions -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold text-gray-900">Recent Purchases</h2>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Sale Price</label>
-          <input type="number" step="0.01" name="items[${rowIndex}][sale_price]" required class="w-full border rounded px-3 py-2">
+        <div class="p-6">
+            {% if recent_purchases %}
+            <div class="space-y-4">
+                {% for purchase in recent_purchases %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <div>
+                        <p class="font-medium">{{ purchase.product_name }}</p>
+                        <p class="text-sm text-gray-600">{{ purchase.supplier_name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium"> ₹{{ "%.2f"|format(purchase.taxable_value) }}</p>
+                        <p class="text-sm text-gray-600">{{ purchase.purchase_date | format_dmy }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center">No recent purchases</p>
+            {% endif %}
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Discount</label>
-          <input type="number" step="0.01" name="items[${rowIndex}][discount_amount]" value="0" class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold text-gray-900">Recent Sales</h2>
         </div>
-      </div>
-      <div class="text-right">
-        <button type="button" class="remove-row bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600">Remove</button>
-      </div>
-    `;
-    container.appendChild(newBlock);
-    bindRowEvents(newBlock);
-    rowIndex++;
-  });
-
-  document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('remove-row')) {
-      const blocks = document.querySelectorAll('.item-block');
-      if (blocks.length > 1) {
-        e.target.closest('.item-block').remove();
-      } else {
-        alert('At least one item is required.');
-      }
-    }
-  });
-
-  function bindRowEvents(row) {
-    const itemDropdown = row.querySelector('.item-name');
-    const brandDropdown = row.querySelector('.item-brand');
-    const sizeDropdown = row.querySelector('.item-size');
-
-    itemDropdown.addEventListener('change', function () {
-      const selectedItem = this.value;
-      brandDropdown.innerHTML = '<option value="">Select Brand</option>';
-      sizeDropdown.innerHTML = '<option value="">Select Size</option>';
-      if (!selectedItem) return;
-
-      fetch("{{ url_for('main.get_brands_sizes') }}", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_name: selectedItem })
-      })
-        .then(res => res.json())
-        .then(data => {
-          for (let brand in data) {
-            const option = document.createElement('option');
-            option.value = brand;
-            option.textContent = brand;
-            brandDropdown.appendChild(option);
-          }
-        });
-    });
-
-    brandDropdown.addEventListener('change', function () {
-      const selectedItem = itemDropdown.value;
-      const selectedBrand = this.value;
-      sizeDropdown.innerHTML = '<option value="">Select Size</option>';
-
-      if (!selectedItem || !selectedBrand) return;
-
-      const sizes = products
-        .filter(p => p.name === selectedItem && p.brand === selectedBrand)
-        .map(p => p.item_size)
-        .filter((v, i, a) => a.indexOf(v) === i);
-
-      sizes.forEach(size => {
-        const product = products.find(p =>
-          p.name === selectedItem && p.brand === selectedBrand && p.item_size === size
-        );
-        if (product) {
-          const opt = document.createElement('option');
-          opt.value = product.id;
-          opt.textContent = size || "N/A";
-          sizeDropdown.appendChild(opt);
-        }
-      });
-    });
-  }
-
-  // Bind for the first item
-  bindRowEvents(document.querySelector('.item-block'));
-})();
-</script>
+        <div class="p-6">
+            {% if recent_sales %}
+            <div class="space-y-4">
+                {% for sale in recent_sales %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <div>
+                        <p class="font-medium">{{ sale.product_name }}</p>
+                        <p class="text-sm text-gray-600">{{ sale.customer_name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium"> ₹{{ "%.2f"|format(sale.taxable_value - sale.discount_amount) }}</p>
+                        <p class="text-sm text-gray-600">{{ sale.sale_date | format_dmy }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center">No recent sales</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

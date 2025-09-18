@@ -9,9 +9,9 @@
         <table class="w-full border-collapse border border-gray-300">
             <thead class="bg-blue-100">
                 <tr>
+                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
                     <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Sales date</th>
                     <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Cust name</th>
-                    <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice No.</th>
                     <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Product</th>
                     <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Brand</th>
                     <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Size</th>
@@ -26,20 +26,25 @@
             <tbody>
                 {% for sales_rpt in sales_rpt %}
                 <tr class="hover:bg-blue-50">
+                    <td class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">
+                        <a href="{{ url_for('main.invoice_view', invoice_number=sales_rpt.invoice_number) }}"
+                            target="_blank">
+                            {{ sales_rpt.invoice_number }}
+                        </a>
+                    </td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.sale_date | format_dmy }}</td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.customer_name }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.invoice_number }}</td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.product_name }}</td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.brand }}</td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.item_size }}</td>
                     <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.quantity }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.sale_price }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.discount_amount }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.taxable_value }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.cgst_amount +
-                        sales_rpt.sgst_amount + sales_rpt.igst_amount }}</td>
-                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ sales_rpt.taxable_value +
-                        sales_rpt.cgst_amount + sales_rpt.sgst_amount + sales_rpt.igst_amount}}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{"%.2f" | format(sales_rpt.sale_price) }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{"%.2f" | format(sales_rpt.discount_amount) }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{"%.2f" | format(sales_rpt.taxable_value) }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{"%.2f" % (sales_rpt.cgst_amount +
+                        sales_rpt.sgst_amount + sales_rpt.igst_amount) }}</td>
+                    <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{"%.2f" %  (sales_rpt.taxable_value +
+                        sales_rpt.cgst_amount + sales_rpt.sgst_amount + sales_rpt.igst_amount)}}</td>
                 </tr>
                 {% else %}
                 <tr>
@@ -50,5 +55,7 @@
             </tbody>
         </table>
     </div>
+    <div class="text-right font-bold text-blue-500 hover:text-blue-700 py-4">Total Sales count : {{ sales_count }}</div>
 </div>
+ <div class="text-left text-gray-500 hover:text-gray-700 py-4 text-sm px-6">Click on the Invoice no. to view the invoice</div>
 {% endblock %}

@@ -1,0 +1,256 @@
+{% extends "layout.html" %}
+{% block title %}Sales Management{% endblock %}
+
+{% block content %}
+<div class="text-right text-green-500 font-bold text-xl hover:text-green-700">
+  <a href="{{ url_for('main.salesreport') }}">Sales report</a>
+</div>
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <h2 class="text-3xl font-bold text-gray-800 mb-6">📦 Record a Sale</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="mb-4">
+    {% for category, message in messages %}
+    <div class="p-4 rounded text-white
+                {% if category == 'success' %} bg-green-500
+                {% elif category == 'danger' %} bg-red-500
+                {% elif category == 'warning' %} bg-yellow-500
+                {% else %} bg-gray-500 {% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('main.sales') }}" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
+    <!-- Customer Info -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+        <input type="text" name="customer_name" required class="w-full border rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+        <input type="text" name="invoice_number" required class="w-full border rounded px-3 py-2">
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
+        <input type="date" name="invoice_date" value="{{ today }}" required class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sale Date</label>
+        <input type="date" name="sale_date" value="{{ today }}" required class="w-full border rounded px-3 py-2">
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Place of Supply</label>
+        <input type="text" name="place_of_supply" value="BR" required class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sale Type</label>
+        <select name="sale_type" class="w-full border rounded px-3 py-2">
+          <option value="Cash">Cash</option>
+          <option value="Credit">Credit</option>
+          <option value="Online">Online</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Tax Status</label>
+      <select name="tax_status" class="w-full border rounded px-3 py-2">
+        <option value="Taxable">Taxable</option>
+        <option value="Exempt">Exempt</option>
+        <option value="Zero-rated">Zero Rated</option>
+      </select>
+    </div>
+
+    <!-- Items -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Items</label>
+      <div class="space-y-4" id="items-container">
+        <!-- First Item Block -->
+        <div class="item-block bg-gray-50 border p-4 rounded-md space-y-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Item Name</label>
+              <select name="items[0][item]" class="item-name w-full border rounded px-3 py-2" required>
+                <option value="">Select Item</option>
+                {% for name in product_names %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Brand</label>
+              <select name="items[0][brand]" class="item-brand w-full border rounded px-3 py-2" required>
+                <option value="">Select Brand</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Size</label>
+              <select name="items[0][product_id]" class="item-size w-full border rounded px-3 py-2" required>
+                <option value="">Select Size</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Quantity</label>
+              <input type="number" name="items[0][quantity]" min="1" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+              <input type="number" step="0.01" name="items[0][sale_price]" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Discount</label>
+              <input type="number" step="0.01" name="items[0][discount_amount]" value="0" class="w-full border rounded px-3 py-2">
+            </div>
+          </div>
+          <div class="text-right">
+            <button type="button" class="remove-row bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+      <button type="button" id="add-item"
+        class="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+        Add Item
+      </button>
+    </div>
+
+    <button type="submit"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+      Submit Sale
+    </button>
+  </form>
+</div>
+
+<!-- JavaScript for dynamic item blocks -->
+<script>
+(function () {
+  let products = {{ products | default([]) | tojson | safe }};
+  let rowIndex = 1;
+
+  document.getElementById('add-item').addEventListener('click', function () {
+    const container = document.getElementById('items-container');
+    const newBlock = document.createElement('div');
+    newBlock.className = 'item-block bg-gray-50 border p-4 rounded-md space-y-2 mt-4';
+    newBlock.innerHTML = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Item Name</label>
+          <select name="items[${rowIndex}][item]" class="item-name w-full border rounded px-3 py-2" required>
+            <option value="">Select Item</option>
+            {% for name in product_names %}
+            <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Brand</label>
+          <select name="items[${rowIndex}][brand]" class="item-brand w-full border rounded px-3 py-2" required>
+            <option value="">Select Brand</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Size</label>
+          <select name="items[${rowIndex}][product_id]" class="item-size w-full border rounded px-3 py-2" required>
+            <option value="">Select Size</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Quantity</label>
+          <input type="number" name="items[${rowIndex}][quantity]" min="1" required class="w-full border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+          <input type="number" step="0.01" name="items[${rowIndex}][sale_price]" required class="w-full border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Discount</label>
+          <input type="number" step="0.01" name="items[${rowIndex}][discount_amount]" value="0" class="w-full border rounded px-3 py-2">
+        </div>
+      </div>
+      <div class="text-right">
+        <button type="button" class="remove-row bg-red-500 text-white px-3 py-1 mt-2 rounded hover:bg-red-600">Remove</button>
+      </div>
+    `;
+    container.appendChild(newBlock);
+    bindRowEvents(newBlock);
+    rowIndex++;
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-row')) {
+      const blocks = document.querySelectorAll('.item-block');
+      if (blocks.length > 1) {
+        e.target.closest('.item-block').remove();
+      } else {
+        alert('At least one item is required.');
+      }
+    }
+  });
+
+  function bindRowEvents(row) {
+    const itemDropdown = row.querySelector('.item-name');
+    const brandDropdown = row.querySelector('.item-brand');
+    const sizeDropdown = row.querySelector('.item-size');
+
+    itemDropdown.addEventListener('change', function () {
+      const selectedItem = this.value;
+      brandDropdown.innerHTML = '<option value="">Select Brand</option>';
+      sizeDropdown.innerHTML = '<option value="">Select Size</option>';
+      if (!selectedItem) return;
+
+      fetch("{{ url_for('main.get_brands_sizes') }}", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_name: selectedItem })
+      })
+        .then(res => res.json())
+        .then(data => {
+          for (let brand in data) {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandDropdown.appendChild(option);
+          }
+        });
+    });
+
+    brandDropdown.addEventListener('change', function () {
+      const selectedItem = itemDropdown.value;
+      const selectedBrand = this.value;
+      sizeDropdown.innerHTML = '<option value="">Select Size</option>';
+
+      if (!selectedItem || !selectedBrand) return;
+
+      const sizes = products
+        .filter(p => p.name === selectedItem && p.brand === selectedBrand)
+        .map(p => p.item_size)
+        .filter((v, i, a) => a.indexOf(v) === i);
+
+      sizes.forEach(size => {
+        const product = products.find(p =>
+          p.name === selectedItem && p.brand === selectedBrand && p.item_size === size
+        );
+        if (product) {
+          const opt = document.createElement('option');
+          opt.value = product.id;
+          opt.textContent = size || "N/A";
+          sizeDropdown.appendChild(opt);
+        }
+      });
+    });
+  }
+
+  // Bind for the first item
+  bindRowEvents(document.querySelector('.item-block'));
+})();
+</script>
+{% endblock %}
