@@ -32,8 +32,8 @@
                 <p><strong>Sale Date:</strong> {{ info.sale_date }}</p>
             </div>
             <div>
-                <p><strong>Tax Status:</strong> {{ info.tax_status }}</p>
-                <p><strong>Sale Type:</strong> {{ info.sale_type }}</p>
+                <p class="text-right"><strong>Tax Status:</strong> {{ info.tax_status }}</p>
+                <p class="text-right"><strong>Sale Type:</strong> {{ info.sale_type }}</p>
             </div>
         </div>
 
@@ -69,7 +69,7 @@
                     </td>
                 </tr>
                 {% endfor %}
-                <tr class="font-bold bg-gray-100">
+                <tr class="font-bold bg-gray-50">
                     <td colspan="3" class="border p-2">Total</td>
                     <td class="border p-2 text-right">{{ total_qty }}</td>
                     <td></td>

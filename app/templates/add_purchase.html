@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}New Purchase - Inventory Management{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">New Purchase Order</h1>
+        <p class="text-gray-600 mt-2">Record a new purchase to update inventory</p>
+    </div>
+</div>
+
+
+<!-- Purchase Form -->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <form method="POST" action="{{ url_for('main.purchase') }}" class="mb-6 sm:mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Product Selection -->
+            <div>
+                <label for="product_id" class="block text-sm font-medium text-gray-700">Product</label>
+                <select name="product_id" id="product_id"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+                    <option value="">Select Product</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.name }}-{{ product.brand }}-{{ product.item_size }}-{{
+                        product.description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Supplier Selection -->
+            <div>
+                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
+                <select name="supplier_id" id="supplier_id"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+                    <option value="">Select Supplier</option>
+                    {% for supplier in suppliers %}
+                    <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Quantity -->
+            <div>
+                <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                <input type="number" name="quantity" id="quantity" min="1"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+            </div>
+
+            <!-- Purchase Price -->
+            <div>
+                <label for="purchase_price" class="block text-sm font-medium text-gray-700">Price per Unit (₹)</label>
+                <input type="number" name="purchase_price" id="purchase_price" step="0.01" min="0"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+            </div>
+
+            <!-- Tax Rates -->
+            <div>
+                <label for="gst_rate" class="block text-sm font-medium text-gray-700">GST Rate (%)</label>
+                <input type="number" name="gst_rate" id="gst_rate" step="0.01" min="0" value="0"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+
+            <!-- Invoice Details -->
+            <div>
+                <label for="invoice_number" class="block text-sm font-medium text-gray-700">Invoice Number</label>
+                <input type="text" name="invoice_number" id="invoice_number"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+            </div>
+            <div>
+                <label for="invoice_date" class="block text-sm font-medium text-gray-700">Invoice Date</label>
+                <input type="date" value="{{ today }}" name="invoice_date" id="invoice_date"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+            </div>
+            <div>
+                <label for="purchase_date" class="block text-sm font-medium text-gray-700">Purchase Date</label>
+                <input type="date" value="{{ today }}" name="purchase_date" id="purchase_date"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    required>
+            </div>
+
+            <!-- Place of Supply -->
+            <div>
+                <label for="place_of_supply" class="block text-sm font-medium text-gray-700">Place of Supply</label>
+                <input type="text" name="place_of_supply" id="place_of_supply" value="BR"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., MH" required>
+            </div>
+
+
+            <!-- Tax Status -->
+            <div>
+                <label for="tax_status" class="block text-sm font-medium text-gray-700">Tax Status</label>
+                <select name="tax_status" id="tax_status"
+                    class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
+                    <option value="taxable">Taxable</option>
+                    <option value="exempt">Exempt</option>
+                    <option value="zero-rated">Zero-Rated</option>
+                </select>
+            </div>
+
+            <!-- Reverse Charge -->
+            <div class="flex items-center">
+                <input type="checkbox" name="is_reverse_charge" id="is_reverse_charge" value="1" class="mr-2">
+                <label for="is_reverse_charge" class="text-sm font-medium text-gray-700">Reverse Charge</label>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-4">
+            <button type="submit"
+                class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-700 text-sm sm:text-base">Add
+                Purchase</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

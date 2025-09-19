@@ -1,118 +1,34 @@
 {% extends "layout.html" %}
 
-{% block title %}Purchase Management{% endblock %}
+{% block title %}Purchases - Inventory Management{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 sm:px-6 lg:px-8">
-  <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Add New Purchase</h2>
 
-  <!-- Purchase Form -->
-  <form method="POST" action="{{ url_for('main.purchase') }}" class="mb-6 sm:mb-8">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Product Selection -->
-      <div>
-        <label for="product_id" class="block text-sm font-medium text-gray-700">Product</label>
-        <select name="product_id" id="product_id"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-          <option value="">Select Product</option>
-          {% for product in products %}
-          <option value="{{ product.id }}">{{ product.name }}-{{ product.brand }}-{{ product.item_size }}-{{ product.description }}</option>
-          {% endfor %}
-        </select>
-      </div>
+<div class="flex justify-between items-center mb-8">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-900">Purchases</h1>
+    <p class="text-gray-600 mt-2">Manage purchase orders and stock replenishment</p>
+  </div>
+  <a href="{{ url_for('main.add_purchase') }}"
+    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+    Add New Product
+  </a>
+</div>
 
-      <!-- Supplier Selection -->
-      <div>
-        <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
-        <select name="supplier_id" id="supplier_id"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-          <option value="">Select Supplier</option>
-          {% for supplier in suppliers %}
-          <option value="{{ supplier.id }}">{{ supplier.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Quantity -->
-      <div>
-        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-        <input type="number" name="quantity" id="quantity" min="1"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-      </div>
-
-      <!-- Purchase Price -->
-      <div>
-        <label for="purchase_price" class="block text-sm font-medium text-gray-700">Price per Unit (₹)</label>
-        <input type="number" name="purchase_price" id="purchase_price" step="0.01" min="0"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-      </div>
-
-      <!-- Tax Rates -->
-      <div>
-        <label for="gst_rate" class="block text-sm font-medium text-gray-700">GST Rate (%)</label>
-        <input type="number" name="gst_rate" id="gst_rate" step="0.01" min="0" value="0"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
-      </div>
-    
-
-      <!-- Invoice Details -->
-      <div>
-        <label for="invoice_number" class="block text-sm font-medium text-gray-700">Invoice Number</label>
-        <input type="text" name="invoice_number" id="invoice_number"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-      </div>
-      <div>
-        <label for="invoice_date" class="block text-sm font-medium text-gray-700">Invoice Date</label>
-        <input type="date" value="{{ today }}" name="invoice_date" id="invoice_date"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-      </div>
-      <div>
-        <label for="purchase_date" class="block text-sm font-medium text-gray-700">Purchase Date</label>
-        <input type="date" value="{{ today }}" name="purchase_date" id="purchase_date"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          required>
-      </div>
-
-      <!-- Place of Supply -->
-      <div>
-        <label for="place_of_supply" class="block text-sm font-medium text-gray-700">Place of Supply</label>
-        <input type="text" name="place_of_supply" id="place_of_supply" value="BR"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500"
-          placeholder="e.g., MH" required>
-      </div>
-
-
-      <!-- Tax Status -->
-      <div>
-        <label for="tax_status" class="block text-sm font-medium text-gray-700">Tax Status</label>
-        <select name="tax_status" id="tax_status"
-          class="w-full border rounded px-2 py-1 text-sm sm:text-base focus:ring-blue-500 focus:border-blue-500">
-          <option value="taxable">Taxable</option>
-          <option value="exempt">Exempt</option>
-          <option value="zero-rated">Zero-Rated</option>
-        </select>
-      </div>
-      
-      <!-- Reverse Charge -->
-      <div class="flex items-center">
-        <input type="checkbox" name="is_reverse_charge" id="is_reverse_charge" value="1" class="mr-2">
-        <label for="is_reverse_charge" class="text-sm font-medium text-gray-700">Reverse Charge</label>
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="mt-4">
-      <button type="submit"
-        class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-700 text-sm sm:text-base">Add
-        Purchase</button>
-    </div>
+<!-- Search Bar -->
+<div class="mb-6">
+  <form method="GET" class="flex sm:flex-row flex-col gap-4">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search products by invoice no. or brand name ..."
+      class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition duration-200">
+      Search
+    </button>
   </form>
+</div>
+
+
+<div class="container mx-auto px-4 sm:px-6 lg:px-8"> 
+
 
   <!-- Purchase History Table -->
   <h2 class="text-xl sm:text-2xl font-semibold mt-6 sm:mt-8 mb-4">Purchase Records</h2>
@@ -127,15 +43,15 @@
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Supplier</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Quantity</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Price (₹)</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Taxable Value (₹)</th>
-          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">CGST (%/₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Taxable<br> Value (₹)</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">GST % / ₹</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Total</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice Date</th>
         </tr>
       </thead>
       <tbody>
         {% for purchase in purchases %}
-        <tr class="hover:bg-green-50">
+        <tr class="hover:bg-blue-50">
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_number }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_name }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.product_brand }}</td>
@@ -144,9 +60,11 @@
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.quantity }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.purchase_price) }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">₹{{ "%.2f"|format(purchase.taxable_value) }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.cgst_rate }}% / ₹{{
-            "%.2f"|format(purchase.cgst_amount) }}</td>
-          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">  ₹{{ "%.2f"|format(purchase.taxable_value + purchase.cgst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.cgst_rate + purchase.sgst_rate +
+            purchase.igst_rate }}% / ₹{{
+            "%.2f"|format(purchase.cgst_amount + purchase.sgst_amount + purchase.igst_amount) }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm"> ₹{{ "%.2f"|format(purchase.taxable_value +
+            purchase.cgst_amount + purchase.sgst_amount + purchase.igst_amount) }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_date | format_dmy }}</td>
         </tr>
         {% else %}

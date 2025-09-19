@@ -63,54 +63,24 @@ def purchase():
     suppliers = db.execute('SELECT * FROM suppliers').fetchall()
     today = datetime.now().strftime('%Y-%m-%d')
 
-    if request.method == 'POST':
-        product_id = request.form['product_id']
-        supplier_id = request.form['supplier_id']
-        quantity = int(request.form['quantity'])
-        place_of_supply = request.form['place_of_supply']
-        purchase_price = float(request.form['purchase_price'])
-        taxable_value = quantity * purchase_price
-        cgst_rate = float(request.form.get('gst_rate', 0)) / 2
-        cgst_amount = (taxable_value * cgst_rate) / 100
-        if(place_of_supply=="BR"):
-            sgst_rate = float(request.form.get('gst_rate', 0)) / 2
-            sgst_amount = (taxable_value * sgst_rate) / 100
-            igst_rate = 0
-            igst_amount = 0
-        else :
-            sgst_rate = 0
-            sgst_amount = 0
-            igst_rate = float(request.form.get('gst_rate', 0)) / 2
-            igst_amount = (taxable_value * igst_rate) / 100
-         
-        invoice_number = request.form['invoice_number']
-        invoice_date = request.form['invoice_date']
-        purchase_date = request.form['purchase_date']
-        is_reverse_charge = request.form.get('is_reverse_charge', '0') == '1'
-        tax_status = request.form['tax_status']
-
-        # Insert purchase
-        db.execute('''
-            INSERT INTO purchases (
-                product_id, supplier_id, quantity, purchase_price, taxable_value,
-                cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
-                invoice_number, invoice_date, purchase_date, place_of_supply,
-                is_reverse_charge, tax_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            product_id, supplier_id, quantity, purchase_price, taxable_value,
-            cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
-            invoice_number, invoice_date, purchase_date, place_of_supply,
-            is_reverse_charge, tax_status
-        ))
-
-        # Update stock
-        db.execute('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?', (quantity, product_id))
-        db.commit()
-        return redirect(url_for('main.purchase'))
-
-    # JOIN purchases with products and suppliers to get product name and supplier details
-    purchases = db.execute('''
+    # JOIN purchases with products and suppliers to get product name and supplier details with the search conditions
+    search = request.args.get('search', '')
+    if search:
+         purchases = db.execute('''
+            SELECT 
+                purchases.*, 
+                products.name AS product_name, 
+                products.brand AS product_brand, 
+                products.item_size AS product_size, 
+                suppliers.name AS supplier_name
+            FROM purchases         
+            JOIN products ON purchases.product_id = products.id
+            JOIN suppliers ON purchases.supplier_id = suppliers.id
+            WHERE   purchases.invoice_number=? COLLATE NOCASE OR  product_brand=? COLLATE NOCASE           
+            ORDER BY purchases.id DESC
+        ''', (search,search)).fetchall()
+    else :
+        purchases = db.execute('''
         SELECT 
             purchases.id, 
             products.name AS product_name, 
@@ -304,11 +274,7 @@ def sales():
     sanitize(products)
     unique_names = sorted({product['name'] for product in products if product['name']})
 
-    # Debug: Print to console
-    # print("Products Raw:", products_raw)
-    # print("Products Dict:", products)
-    # print("Unique Names:", unique_names)
-
+   
     if not unique_names:
         flash("No valid product names found in the database. Please add products.", "warning")
 
@@ -400,4 +366,59 @@ def dashboard():
         total_stock_value=total_stock_value,
         recent_purchases=recent_purchases,
         recent_sales=recent_sales)
+
+@main.route('/purchase/add_purchase', methods=['GET', 'POST'])
+def add_purchase():
+    db = get_db()
+    products = db.execute('SELECT * FROM products').fetchall()
+    suppliers = db.execute('SELECT * FROM suppliers').fetchall()
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    if request.method == 'POST':
+        product_id = request.form['product_id']
+        supplier_id = request.form['supplier_id']
+        quantity = int(request.form['quantity'])
+        place_of_supply = request.form['place_of_supply']
+        purchase_price = float(request.form['purchase_price'])
+        taxable_value = quantity * purchase_price
+        cgst_rate = float(request.form.get('gst_rate', 0)) / 2
+        cgst_amount = (taxable_value * cgst_rate) / 100
+        if(place_of_supply=="BR"):
+            sgst_rate = float(request.form.get('gst_rate', 0)) / 2
+            sgst_amount = (taxable_value * sgst_rate) / 100
+            igst_rate = 0
+            igst_amount = 0
+        else :
+            sgst_rate = 0
+            sgst_amount = 0
+            igst_rate = float(request.form.get('gst_rate', 0)) / 2
+            igst_amount = (taxable_value * igst_rate) / 100
+        
+        invoice_number = request.form['invoice_number']
+        invoice_date = request.form['invoice_date']
+        purchase_date = request.form['purchase_date']
+        is_reverse_charge = request.form.get('is_reverse_charge', '0') == '1'
+        tax_status = request.form['tax_status']
+
+        # Insert purchase
+        db.execute('''
+            INSERT INTO purchases (
+                product_id, supplier_id, quantity, purchase_price, taxable_value,
+                cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
+                invoice_number, invoice_date, purchase_date, place_of_supply,
+                is_reverse_charge, tax_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            product_id, supplier_id, quantity, purchase_price, taxable_value,
+            cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
+            invoice_number, invoice_date, purchase_date, place_of_supply,
+            is_reverse_charge, tax_status
+        ))
+
+        # Update stock
+        db.execute('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?', (quantity, product_id))
+        db.commit()
+        return redirect(url_for('main.purchase'))
+    return render_template('add_purchase.html', products=products, suppliers=suppliers, today=today)
+
 

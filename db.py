@@ -18,6 +18,7 @@ def close_db(e=None):
     if db is not None:
         db.close()
 
+# To initialize the database, will recreate the database use localhost:5051/init-db
 def init_db():
     db = get_db()
     with current_app.open_resource('app/schema.sql') as f:
