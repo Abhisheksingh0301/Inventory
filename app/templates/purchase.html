@@ -11,7 +11,7 @@
   </div>
   <a href="{{ url_for('main.add_purchase') }}"
     class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
-    Add New Product
+    Add New Purchase
   </a>
 </div>
 
@@ -27,7 +27,7 @@
 </div>
 
 
-<div class="container mx-auto px-4 sm:px-6 lg:px-8"> 
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
 
 
   <!-- Purchase History Table -->
@@ -47,6 +47,7 @@
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">GST % / ₹</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Total</th>
           <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Invoice Date</th>
+          <th class="border px-2 sm:px-4 py-2 text-left text-xs sm:text-sm">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -66,6 +67,12 @@
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm"> ₹{{ "%.2f"|format(purchase.taxable_value +
             purchase.cgst_amount + purchase.sgst_amount + purchase.igst_amount) }}</td>
           <td class="border px-2 sm:px-4 py-2 text-xs sm:text-sm">{{ purchase.invoice_date | format_dmy }}</td>
+          <td class="border px-2 sm:px-4 py-2 text-sm">
+            <form action="{{ url_for('main.delete_purchase', purchase_id=purchase.id) }}" method="POST"
+              onsubmit="return confirm('Are you sure you want to delete this purchase record?');">
+              <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded  cursor-pointer ">Delete</button>
+            </form>
+          </td>
         </tr>
         {% else %}
         <tr>

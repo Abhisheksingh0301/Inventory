@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}My Flask App{% endblock %}</title>
+  <title>{% block title %}My Inventory Management App{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='output.css') }}" />
   <style>
     /* Custom animations */
@@ -13,62 +13,78 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     @keyframes slideIn {
       from {
         opacity: 0;
         transform: translateX(-100%);
       }
+
       to {
         opacity: 1;
         transform: translateX(0);
       }
     }
+
     .animate-fadeInUp {
       animation: fadeInUp 0.6s ease-out forwards;
     }
+
     .animate-slideIn {
       animation: slideIn 0.3s ease-out forwards;
     }
+
     .main-content {
       opacity: 0;
       transition: opacity 0.5s ease-out;
     }
+
     .main-content.visible {
       opacity: 1;
     }
+
     .nav-link {
       transition: transform 0.2s ease, color 0.3s ease;
     }
+
     .nav-link:hover {
       transform: scale(1.1);
     }
+
     .social-icon {
       transition: transform 0.3s ease, color 0.3s ease;
     }
+
     .social-icon:hover {
       transform: scale(1.2) rotate(5deg);
     }
   </style>
 </head>
 
-<body class="flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 text-gray-900 font-sans">
+<body
+  class="flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 text-gray-900 font-sans">
 
   <!-- Navbar -->
   <nav class="bg-gradient-to-r from-indigo-600 to-blue-600 sticky top-0 z-50 shadow-lg">
     <div class="container mx-auto flex items-center justify-between py-4 px-4 sm:px-6">
       <!-- Logo -->
-      <a href="/" class="flex items-center space-x-2 text-white font-bold text-xl hover:scale-105 transition-transform duration-300">
-        <img src="{{ url_for('static', filename='logo.jfif') }}" alt="Logo" class="h-8 w-8 object-contain rounded-full shadow-md" />
-        <span>My Flask App</span>
+      <a href="/"
+        class="flex items-center space-x-2 text-white font-bold text-xl hover:scale-105 transition-transform duration-300">
+        <img src="{{ url_for('static', filename='logo.jfif') }}" alt="Logo"
+          class="h-8 w-8 object-contain rounded-full shadow-md" />
+        <span>My Inventory Management App</span>
       </a>
 
       <!-- Hamburger Menu Button (visible on mobile) -->
-      <button id="menu-toggle" class="sm:hidden text-white focus:outline-none hover:bg-blue-700 p-2 rounded-md transition-colors duration-300" aria-label="Toggle navigation">
+      <button id="menu-toggle"
+        class="sm:hidden text-white focus:outline-none hover:bg-blue-700 p-2 rounded-md transition-colors duration-300"
+        aria-label="Toggle navigation">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
@@ -76,38 +92,57 @@
 
       <!-- Navigation Links (Row on large screens) -->
       <div id="nav-links" class="hidden sm:flex sm:flex-row sm:space-x-8 sm:items-center">
-        <a href="/" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp">Home</a>
-        <a href="/suppliers" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.1s;">Suppliers</a>
-        <a href="/products" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.2s;">Products</a>
-        <a href="/purchase" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.3s;">Purchase</a>
-        <a href="/about" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.4s;">About</a>
+        <a href="/"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp">Home</a>
+        <a href="/suppliers"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
+          style="animation-delay: 0.1s;">Suppliers</a>
+        <a href="/products"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
+          style="animation-delay: 0.2s;">Products</a>
+        <a href="/purchase"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
+          style="animation-delay: 0.3s;">Purchase</a>
+        <a href="/about"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
+          style="animation-delay: 0.4s;">About</a>
       </div>
     </div>
 
     <!-- Mobile Menu (Column on small screens) -->
     <div id="mobile-menu" class="hidden sm:hidden bg-gradient-to-r from-indigo-700 to-blue-700 animate-slideIn">
       <div class="flex flex-col items-center space-y-4 py-4">
-        <a href="/" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Home</a>
-        <a href="/suppliers" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Suppliers</a>
-        <a href="/products" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Products</a>
-        <a href="/purchase" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Purchase</a>
-        <a href="/about" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">About</a>
+        <a href="/"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Home</a>
+        <a href="/suppliers"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Suppliers</a>
+        <a href="/products"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Products</a>
+        <a href="/purchase"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Purchase</a>
+        <a href="/about"
+          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">About</a>
       </div>
     </div>
   </nav>
 
   <!-- Main Content -->
-  <main class="container mx-auto mt-6 sm:mt-10 mb-12 p-4 sm:p-8 bg-white/80 rounded-lg shadow-xl max-w-7xl flex-grow main-content backdrop-blur-md">
+  <main
+    class="container mx-auto mt-6 sm:mt-10 mb-12 p-4 sm:p-8 bg-white/80 rounded-lg shadow-xl max-w-7xl flex-grow main-content backdrop-blur-md">
     {% block content %}{% endblock %}
   </main>
 
   <!-- Footer -->
   <footer class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-center py-6">
-    <p class="mb-2 text-sm sm:text-base">&copy; <span id="current-year">{{ current_year }}</span> My Flask App. All rights reserved.</p>
+    <p class="mb-2 text-sm sm:text-base">&copy; <span id="current-year">{{ current_year }}</span> My Flask App. All
+      rights reserved.</p>
     <div class="flex justify-center space-x-4 sm:space-x-6">
-      <a href="#" aria-label="Twitter" class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🐦</a>
-      <a href="#" aria-label="GitHub" class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🐙</a>
-      <a href="#" aria-label="LinkedIn" class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🔗</a>
+      <a href="#" aria-label="Twitter"
+        class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🐦</a>
+      <a href="#" aria-label="GitHub"
+        class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🐙</a>
+      <a href="#" aria-label="LinkedIn"
+        class="social-icon text-indigo-200 hover:text-white transition-colors duration-300 text-lg sm:text-xl">🔗</a>
     </div>
   </footer>
 

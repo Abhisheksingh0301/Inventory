@@ -47,8 +47,7 @@
                     <th class="border p-2 text-right">Price</th>
                     <th class="border p-2 text-right">Discount</th>
                     <th class="border p-2 text-right">Taxable</th>
-                    <th class="border p-2 text-right">CGST</th>
-                    <th class="border p-2 text-right">SGST</th>
+                    <th class="border p-2 text-right">GST</th>
                     <th class="border p-2 text-right">Total</th>
                 </tr>
             </thead>
@@ -62,10 +61,9 @@
                     <td class="border p-2 text-right">{{ "%.2f"|format(item['sale_price']) }}</td>
                     <td class="border p-2 text-right">{{ "%.2f"|format(item['discount_amount']) }}</td>
                     <td class="border p-2 text-right">{{ "%.2f"|format(item['taxable_value']) }}</td>
-                    <td class="border p-2 text-right">{{ "%.2f"|format(item['cgst_amount']) }}</td>
-                    <td class="border p-2 text-right">{{ "%.2f"|format(item['sgst_amount']) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format(item['cgst_amount'] + item['sgst_amount'] + item['igst_amount']) }}</td>
                     <td class="border p-2 text-right">
-                        {{ "%.2f"|format(item['taxable_value'] + item['cgst_amount'] + item['sgst_amount']) }}
+                        {{ "%.2f"|format(item['taxable_value'] + item['cgst_amount'] + item['sgst_amount'] + item['igst_amount']) }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -75,8 +73,7 @@
                     <td></td>
                     <td class="border p-2 text-right">{{ "%.2f"|format(total_discount) }}</td>
                     <td class="border p-2 text-right">{{ "%.2f"|format(total_taxable) }}</td>
-                    <td class="border p-2 text-right">{{ "%.2f"|format(total_cgst) }}</td>
-                    <td class="border p-2 text-right">{{ "%.2f"|format(total_sgst) }}</td>
+                    <td class="border p-2 text-right">{{ "%.2f"|format((total_cgst) +(total_sgst) + (total_igst)) }}</td>
                     <td class="border p-2 text-right">{{ "%.2f"|format(grand_total) }}</td>
                 </tr>
             </tbody>

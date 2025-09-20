@@ -48,15 +48,16 @@ def products():
     #products = db.execute('SELECT * FROM products').fetchall()
     return render_template('products.html', products=products, search=search)
 
+#To delete the product from product table
 @main.route('/delete-product/<int:product_id>', methods=['POST'])
 def delete_product(product_id):
     db = get_db()
     db.execute('DELETE FROM products WHERE id = ?', (product_id,))
     db.commit()
-    # Optionally flash a success message here
+    flash('Product deleted successfully','danger')
     return redirect(url_for('main.products'))
 
-@main.route('/purchase', methods=['GET', 'POST'])
+@main.route('/purchase', methods=['GET'])
 def purchase():
     db = get_db()
     products = db.execute('SELECT * FROM products').fetchall()
@@ -314,6 +315,7 @@ def invoice_view(invoice_number):
     total_taxable = sum(item['taxable_value'] for item in items)
     total_cgst = sum(item['cgst_amount'] for item in items)
     total_sgst = sum(item['sgst_amount'] for item in items)
+    total_igst = sum(item['igst_amount'] for item in items)
     grand_total = total_taxable + total_cgst + total_sgst
 
     return render_template("invoice.html", info=info, items=items,
@@ -322,6 +324,7 @@ def invoice_view(invoice_number):
                            total_taxable=total_taxable,
                            total_cgst=total_cgst,
                            total_sgst=total_sgst,
+                           total_igst=total_igst,
                            grand_total=grand_total)
 
 @main.route('/salesreport')
@@ -367,6 +370,7 @@ def dashboard():
         recent_purchases=recent_purchases,
         recent_sales=recent_sales)
 
+#New purchase record
 @main.route('/purchase/add_purchase', methods=['GET', 'POST'])
 def add_purchase():
     db = get_db()
@@ -375,50 +379,92 @@ def add_purchase():
     today = datetime.now().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
-        product_id = request.form['product_id']
-        supplier_id = request.form['supplier_id']
-        quantity = int(request.form['quantity'])
-        place_of_supply = request.form['place_of_supply']
-        purchase_price = float(request.form['purchase_price'])
-        taxable_value = quantity * purchase_price
-        cgst_rate = float(request.form.get('gst_rate', 0)) / 2
-        cgst_amount = (taxable_value * cgst_rate) / 100
-        if(place_of_supply=="BR"):
-            sgst_rate = float(request.form.get('gst_rate', 0)) / 2
-            sgst_amount = (taxable_value * sgst_rate) / 100
-            igst_rate = 0
-            igst_amount = 0
-        else :
-            sgst_rate = 0
-            sgst_amount = 0
-            igst_rate = float(request.form.get('gst_rate', 0)) / 2
-            igst_amount = (taxable_value * igst_rate) / 100
-        
-        invoice_number = request.form['invoice_number']
-        invoice_date = request.form['invoice_date']
-        purchase_date = request.form['purchase_date']
-        is_reverse_charge = request.form.get('is_reverse_charge', '0') == '1'
-        tax_status = request.form['tax_status']
+        try:
+            product_id = request.form['product_id']
+            supplier_id = request.form['supplier_id']
+            quantity = int(request.form['quantity'])
+            place_of_supply = request.form['place_of_supply']
+            purchase_price = float(request.form['purchase_price'])
+            taxable_value = quantity * purchase_price
+            gst_rate = float(request.form.get('gst_rate', 0))
+            cgst_rate = gst_rate / 2
+            cgst_amount = (taxable_value * cgst_rate) / 100
 
-        # Insert purchase
-        db.execute('''
-            INSERT INTO purchases (
+            if place_of_supply == "BR":
+                sgst_rate = gst_rate / 2
+                sgst_amount = (taxable_value * sgst_rate) / 100
+                igst_rate = 0
+                igst_amount = 0
+            else:
+                sgst_rate = 0
+                sgst_amount = 0
+                igst_rate = gst_rate
+                igst_amount = (taxable_value * igst_rate) / 100
+
+            invoice_number = request.form['invoice_number']
+            invoice_date = request.form['invoice_date']
+            purchase_date = request.form['purchase_date']
+            is_reverse_charge = request.form.get('is_reverse_charge', '0') == '1'
+            tax_status = request.form['tax_status']
+
+            print("Inserting purchase:", product_id, supplier_id, quantity, purchase_price)
+
+            # Insert purchase
+            db.execute('''
+                INSERT INTO purchases (
+                    product_id, supplier_id, quantity, purchase_price, taxable_value,
+                    cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
+                    invoice_number, invoice_date, purchase_date, place_of_supply,
+                    is_reverse_charge, tax_status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
                 product_id, supplier_id, quantity, purchase_price, taxable_value,
                 cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
                 invoice_number, invoice_date, purchase_date, place_of_supply,
                 is_reverse_charge, tax_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            product_id, supplier_id, quantity, purchase_price, taxable_value,
-            cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
-            invoice_number, invoice_date, purchase_date, place_of_supply,
-            is_reverse_charge, tax_status
-        ))
+            ))
+            print("Insert executed")
+            # Update stock
+            db.execute('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?', (quantity, product_id))
+            db.commit()
+            print("Commit executed")
+            flash('Purchase added successfully!', 'success')
+            return redirect(url_for('main.purchase'))
 
-        # Update stock
-        db.execute('UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?', (quantity, product_id))
-        db.commit()
-        return redirect(url_for('main.purchase'))
+        except Exception as e:
+            print("Error inserting purchase:", e)
+            flash('Error adding purchase: ' + str(e), 'danger')
+
     return render_template('add_purchase.html', products=products, suppliers=suppliers, today=today)
+
+
+
+# To delete the purchase record
+@main.route('/delete-purchase/<int:purchase_id>', methods=['POST']) 
+def delete_purchase(purchase_id): 
+    db = get_db()
+
+    # Step 1: Get the purchase details before deleting
+    purchase = db.execute(
+        'SELECT product_id, quantity FROM purchases WHERE id = ?', 
+        (purchase_id,)
+    ).fetchone()
+
+    product_id = purchase['product_id']
+    quantity = purchase['quantity']
+
+    # Step 2: Update the stock (subtracting the purchase quantity)
+    db.execute(
+        'UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', 
+        (quantity, product_id)
+    )
+
+    # Step 3: Delete the purchase
+    db.execute('DELETE FROM purchases WHERE product_id = ?', (product_id,)) 
+    db.commit()
+
+    flash('Purchase deleted and stock updated successfully.', 'danger') 
+    return redirect(url_for('main.purchase'))
+
 
 

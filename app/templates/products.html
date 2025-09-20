@@ -102,8 +102,9 @@
         <th class="border border-gray-300 px-4 py-2 text-left">Brand</th>
         <th class="border border-gray-300 px-4 py-2 text-left">Size</th>
         <th class="border border-gray-300 px-4 py-2 text-left">Description</th>
+        <th class="border border-gray-300 px-4 py-2 text-left">Qty</th>
         <th class="border border-gray-300 px-4 py-2 text-left">GST Rate (%)</th>
-        <th class="border border-gray-300 px-4 py-2 text-left">Actions</th> <!-- New column -->
+        <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -114,11 +115,12 @@
         <td class="border border-gray-300 px-4 py-2">{{ product.brand }}</td>
         <td class="border border-gray-300 px-4 py-2">{{ product.item_size }}</td>
         <td class="border border-gray-300 px-4 py-2">{{ product.description }}</td>
+        <td class="border border-gray-300 px-4 py-2">{{ product.stock_quantity }}</td>
         <td class="border border-gray-300 px-4 py-2">{{ product.gst_rate }}</td>
         <td class="border border-gray-300 px-4 py-2">
           <form action="{{ url_for('main.delete_product', product_id=product.id) }}" method="POST"
             onsubmit="return confirm('Are you sure you want to delete this product?');">
-            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded cursor-pointer">Delete</button>
           </form>
         </td>
       </tr>
