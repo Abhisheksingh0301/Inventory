@@ -1,9 +1,9 @@
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS purchases;
-DROP TABLE IF EXISTS sales;
-DROP TABLE IF EXISTS suppliers;
+-- DROP TABLE IF EXISTS products;
+-- DROP TABLE IF EXISTS purchases;
+-- DROP TABLE IF EXISTS sales;
+-- DROP TABLE IF EXISTS suppliers;
 
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     brand TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE products (
     UNIQUE (name, brand, item_size, description)  -- ✅ Composite unique constraint
 );
 
-CREATE TABLE purchases (
+CREATE TABLE IF NOT EXISTS purchases (
     id INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique identifier for each purchase
     product_id INTEGER NOT NULL, -- References the products table
     supplier_id INTEGER NOT NULL, -- References the suppliers table for supplier details (e.g., GSTIN)
@@ -41,7 +41,7 @@ CREATE TABLE purchases (
 );
 
 
-CREATE TABLE sales (
+CREATE TABLE IF NOT EXISTS sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER NOT NULL,
     customer_name TEXT NOT NULL, -- References customers table
@@ -75,11 +75,24 @@ CREATE INDEX idx_sales_product_id ON sales(product_id);
 CREATE INDEX idx_sales_sale_date ON sales(sale_date);
 CREATE INDEX idx_sales_invoice_number ON sales(invoice_number);
 
-CREATE TABLE suppliers (
+CREATE TABLE IF NOT EXISTS suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     gstin TEXT NOT NULL, -- Supplier's GSTIN
     name TEXT NOT NULL, -- Supplier name
     address TEXT, -- Supplier address
     state_code TEXT NOT NULL -- State code for GST (e.g., 'MH')
 );
+
+
+--Table for user authentications
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
+    password TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 

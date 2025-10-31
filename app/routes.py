@@ -1,11 +1,26 @@
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Flask, session, redirect
+from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db
 from datetime import datetime
+from functools import wraps
 
 main = Blueprint('main', __name__)
 
+#To check whether user is logged in or not
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("You need to be logged in to view this page.", "warning")
+            return redirect(url_for('main.login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+
 @main.route('/about')
+@login_required
 def about():
     db=get_db()
     product_count=db.execute("SELECT COUNT(*) FROM products").fetchone()[0]
@@ -18,6 +33,7 @@ def about():
 #     return render_template('about.html', product_count=product_count)
 
 @main.route('/products', methods=['GET', 'POST'])
+@login_required
 def products():
     db = get_db()
     search = request.args.get('search', '')
@@ -50,6 +66,7 @@ def products():
 
 #To delete the product from product table
 @main.route('/delete-product/<int:product_id>', methods=['POST'])
+@login_required
 def delete_product(product_id):
     db = get_db()
     db.execute('DELETE FROM products WHERE id = ?', (product_id,))
@@ -58,6 +75,7 @@ def delete_product(product_id):
     return redirect(url_for('main.products'))
 
 @main.route('/purchase', methods=['GET'])
+@login_required
 def purchase():
     db = get_db()
     products = db.execute('SELECT * FROM products').fetchall()
@@ -116,6 +134,7 @@ def purchase():
 
 
 @main.route('/suppliers', methods=['GET', 'POST'])
+@login_required
 def suppliers():
     db = get_db()
 
@@ -171,6 +190,7 @@ def get_brands_sizes():
 
 # 📄 GET & POST: /sales
 @main.route('/sales', methods=['GET', 'POST'])
+@login_required
 def sales():
     db = get_db()
     today = datetime.now().strftime('%Y-%m-%d')
@@ -282,7 +302,6 @@ def sales():
     return render_template('sales.html', products=products, product_names=unique_names, today=today)
 
 #Invoice routes
-from flask import send_file, flash, redirect, url_for
 from jinja2 import Environment, FileSystemLoader
 import os
 from flask import current_app
@@ -293,6 +312,7 @@ from flask import current_app
 #     return render_template('home.html', product_names=['One', 'Two', 'Three'], products=[])
 
 @main.route('/invoice/<invoice_number>')
+@login_required
 def invoice_view(invoice_number):
     db = get_db()
     
@@ -328,6 +348,7 @@ def invoice_view(invoice_number):
                            grand_total=grand_total)
 
 @main.route('/salesreport')
+@login_required
 def salesreport():
     db = get_db()
     sales_rpt = db.execute(
@@ -345,6 +366,7 @@ def salesreport():
 
 # New dashboard
 @main.route('/')
+@login_required
 def dashboard():
     db=get_db()
     product_count=db.execute("SELECT COUNT(*) FROM products").fetchone()[0]
@@ -372,6 +394,7 @@ def dashboard():
 
 #New purchase record
 @main.route('/purchase/add_purchase', methods=['GET', 'POST'])
+@login_required
 def add_purchase():
     db = get_db()
     products = db.execute('SELECT * FROM products').fetchall()
@@ -441,6 +464,7 @@ def add_purchase():
 
 # To delete the purchase record
 @main.route('/delete-purchase/<int:purchase_id>', methods=['POST']) 
+@login_required
 def delete_purchase(purchase_id): 
     db = get_db()
 
@@ -466,5 +490,76 @@ def delete_purchase(purchase_id):
     flash('Purchase deleted and stock updated successfully.', 'danger') 
     return redirect(url_for('main.purchase'))
 
+# @main.route('/about')
 
 
+@main.route('/register', methods=['GET', 'POST'])
+@login_required
+def register():
+    db = get_db()
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        email=request.form['email']
+
+        # Check if passwords match
+        if password != confirm_password:
+            return "Passwords do not match!", 400
+
+
+        existing_user=db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        # existing_user = db.fetchone()
+        if existing_user:
+            db.close()
+            return "Username already exists!", 400
+
+        # Hash the password before storing it
+        hashed_password = generate_password_hash(password)
+
+        # Insert new user into the database
+        db.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", (username, hashed_password, email))
+        db.commit()
+        flash("Sale recorded successfully!", "success")
+
+        return redirect(url_for('login'))  # Redirect to login after successful registration
+
+    return render_template('register.html')  # Render the registration form
+
+#Login route
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    db = get_db()
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Fetch user from database
+        user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+
+        if user is None:
+            db.close()
+            flash("Username does not exist!", "error")
+            return render_template('login.html')
+
+        # Check hashed password
+        if not check_password_hash(user['password'], password):
+            db.close()
+            flash("Incorrect password!", "error")
+            return render_template('login.html')
+
+        # Successful login
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        db.close()
+        flash("Logged in successfully!", "success")
+        return redirect(url_for('main.dashboard')) 
+
+    return render_template('login.html')  # Render the login form
+
+#Logout route
+@main.route('/logout')
+def logout():
+    session.clear()
+    flash("Logged out successfully", "success")
+    return redirect(url_for('main.login'))

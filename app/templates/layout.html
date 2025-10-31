@@ -71,60 +71,57 @@
   class="flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 text-gray-900 font-sans">
 
   <!-- Navbar -->
-  <nav class="bg-gradient-to-r from-indigo-600 to-blue-600 sticky top-0 z-50 shadow-lg">
-    <div class="container mx-auto flex items-center justify-between py-4 px-4 sm:px-6">
-      <!-- Logo -->
-      <a href="/"
-        class="flex items-center space-x-2 text-white font-bold text-xl hover:scale-105 transition-transform duration-300">
-        <img src="{{ url_for('static', filename='logo.jfif') }}" alt="Logo"
-          class="h-8 w-8 object-contain rounded-full shadow-md" />
-        <span>My Inventory Management App</span>
-      </a>
+  <!-- Navbar -->
+<nav class="bg-gradient-to-r from-indigo-600 to-blue-600 sticky top-0 z-50 shadow-lg">
+  <div class="container mx-auto flex items-center justify-between py-4 px-4 sm:px-6">
+    <!-- Logo -->
+    <a href="/" class="flex items-center space-x-2 text-white font-bold text-xl hover:scale-105 transition-transform duration-300">
+      <img src="{{ url_for('static', filename='logo.jfif') }}" alt="Logo" class="h-8 w-8 object-contain rounded-full shadow-md" />
+      <span>My Inventory Management App</span>
+    </a>
 
-      <!-- Hamburger Menu Button (visible on mobile) -->
-      <button id="menu-toggle"
-        class="sm:hidden text-white focus:outline-none hover:bg-blue-700 p-2 rounded-md transition-colors duration-300"
-        aria-label="Toggle navigation">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
+    <!-- Hamburger Menu Button (visible on mobile) -->
+    <button id="menu-toggle" class="sm:hidden text-white focus:outline-none hover:bg-blue-700 p-2 rounded-md transition-colors duration-300" aria-label="Toggle navigation">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
 
-      <!-- Navigation Links (Row on large screens) -->
-      <div id="nav-links" class="hidden sm:flex sm:flex-row sm:space-x-8 sm:items-center">
-        <a href="/"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp">Home</a>
-        <a href="/suppliers"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
-          style="animation-delay: 0.1s;">Suppliers</a>
-        <a href="/products"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
-          style="animation-delay: 0.2s;">Products</a>
-        <a href="/purchase"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
-          style="animation-delay: 0.3s;">Purchase</a>
-        <a href="/about"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp"
-          style="animation-delay: 0.4s;">About</a>
-      </div>
+    <!-- Navigation Links (Row on large screens) -->
+    <div id="nav-links" class="hidden sm:flex sm:flex-row sm:space-x-8 sm:items-center">
+      <a href="/" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp">Home</a>
+      <a href="/suppliers" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.1s;">Suppliers</a>
+      <a href="/products" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.2s;">Products</a>
+      <a href="/purchase" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.3s;">Purchase</a>
+      <a href="/about" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif animate-fadeInUp" style="animation-delay: 0.4s;">About</a>
+
+      {% if session.get('username') %}
+      <!-- Show username and logout if logged in -->
+      <span class="text-lg font-serif font-semibold text-yellow-200 ml-4 animate-fadeInUp" style="animation-delay: 0.5s;">
+        Hello, {{ session.username }}
+      </span>
+      <a href="{{ url_for('main.logout') }}" class="nav-link text-yellow-200 font-serif text-lg font-semibold ml-2 hover:text-indigo-200 animate-fadeInUp" style="animation-delay: 0.6s;">Logout</a>
+      {% endif %}
     </div>
+  </div>
 
-    <!-- Mobile Menu (Column on small screens) -->
-    <div id="mobile-menu" class="hidden sm:hidden bg-gradient-to-r from-indigo-700 to-blue-700 animate-slideIn">
-      <div class="flex flex-col items-center space-y-4 py-4">
-        <a href="/"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Home</a>
-        <a href="/suppliers"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Suppliers</a>
-        <a href="/products"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Products</a>
-        <a href="/purchase"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Purchase</a>
-        <a href="/about"
-          class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">About</a>
-      </div>
+  <!-- Mobile Menu (Column on small screens) -->
+  <div id="mobile-menu" class="hidden sm:hidden bg-gradient-to-r from-indigo-700 to-blue-700 animate-slideIn">
+    <div class="flex flex-col items-center space-y-4 py-4">
+      <a href="/" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Home</a>
+      <a href="/suppliers" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Suppliers</a>
+      <a href="/products" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Products</a>
+      <a href="/purchase" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">Purchase</a>
+      <a href="/about" class="nav-link text-white text-lg font-semibold hover:text-indigo-200 transition-colors duration-300 font-serif">About</a>
+
+      {% if session.get('username') %}
+      <span class="font-serif font-semibold text-yellow-200 text-lg mt-2">Hello, {{ session.username }}</span>
+      <a href="{{ url_for('main.logout') }}" class="nav-link text-yellow-200 font-serif font-semibold text-lg  hover:text-indigo-200">Logout</a>
+      {% endif %}
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Main Content -->
   <main
