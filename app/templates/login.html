@@ -3,10 +3,26 @@
 {% block title %}User Login{% endblock %}
 
 {% block content %}
+
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
         <h2 class="text-xl sm:text-2xl font-semibold mb-6">User Login</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4 font-serif">
+            {% for category, message in messages %}
+            <div class="p-4 rounded text-white
+                {% if category == 'success' %} bg-green-500
+                {% elif category == 'danger' %} bg-red-500
+                {% elif category == 'warning' %} bg-yellow-500
+                {% else %} bg-gray-500 {% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
 
         <form method="POST" class="bg-stone-100 shadow-lg rounded-lg px-8 py-8 w-full max-w-md">
             <h2 class="text-2xl font-semibold text-gray-800 mb-3 text-center">Welcome Back</h2>
@@ -27,7 +43,7 @@
 
             <!-- Submit Button -->
             <button type="submit"
-                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium">
+                class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 cursor-pointer font-medium">
                 Login
             </button>
 
@@ -38,9 +54,9 @@
             </p>
 
             <!-- Forgot Password Link -->
-            <p class="text-center text-gray-600 text-sm mt-2">
+            <!-- <p class="text-center text-gray-600 text-sm mt-2">
                 <a href="/forgot-password" class="text-indigo-500 hover:underline font-medium">Forgot your password?</a>
-            </p>
+            </p> -->
         </form>
     </div>
 

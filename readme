@@ -10,3 +10,5 @@ requirements.txt file is same as package.json. This command generates the same f
 # pip install -r requirements.txt => To install all the dependancy from this file.
 
 # To generate requirements.txt file => pip freeze > requirements.txt
+
+# To execute the program in background => pythonw.exe run.py

@@ -20,7 +20,7 @@ def login_required(f):
 
 
 @main.route('/about')
-@login_required
+# @login_required
 def about():
     db=get_db()
     product_count=db.execute("SELECT COUNT(*) FROM products").fetchone()[0]
@@ -494,7 +494,7 @@ def delete_purchase(purchase_id):
 
 
 @main.route('/register', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def register():
     db = get_db()
     if request.method == 'POST':
@@ -531,21 +531,21 @@ def register():
 def login():
     db = get_db()
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].strip().lower()
         password = request.form['password']
 
         # Fetch user from database
-        user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        user = db.execute("SELECT * FROM users WHERE LOWER( username) = ?", (username,)).fetchone()
 
         if user is None:
             db.close()
-            flash("Username does not exist!", "error")
+            flash("Username does not exist!", "warning")
             return render_template('login.html')
 
         # Check hashed password
         if not check_password_hash(user['password'], password):
             db.close()
-            flash("Incorrect password!", "error")
+            flash("Incorrect password!", "danger")
             return render_template('login.html')
 
         # Successful login
