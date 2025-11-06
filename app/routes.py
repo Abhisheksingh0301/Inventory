@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db
 from datetime import datetime
 from functools import wraps
+import sqlite3
 
 main = Blueprint('main', __name__)
 
@@ -60,6 +61,9 @@ def products():
                 return redirect(url_for('main.products'))
             except ValueError:
                 flash('GST rate must be a number', 'error')
+            except sqlite3.IntegrityError as e:
+                 flash('Product with the same name, brand, size, and description already exists.', 'error')
+                 main.logger.error(f"IntegrityError: {e}")
 
     #products = db.execute('SELECT * FROM products').fetchall()
     return render_template('products.html', products=products, search=search)
